@@ -186,4 +186,4 @@ Created by [Tanvir Farhad (TFT444)](https://github.com/TFT444), founder of Shiel
 
 ## License
 
-Licensing is not yet selected. Until a license file is added, normal copyright rules apply.
+SolGuard is available under the [MIT License](LICENSE). Copyright (c) 2026 ShieldTech Ltd.
