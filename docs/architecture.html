@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Interactive SolGuard pre-signing payment security architecture">
+  <title>SolGuard — Interactive Architecture</title>
+  <style>
+    :root{color-scheme:dark;--bg:#07111f;--panel:#0d1a2b;--node:#111f31;--border:#29405a;--text:#f4f8fb;--muted:#9fb0c2;--green:#36d6a5;--amber:#efb647;--red:#f26b78;--blue:#66a8ff}
+    *{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 50% -20%,#15334b 0,var(--bg) 48%);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh}.shell{width:min(1180px,calc(100% - 32px));margin:auto;padding:48px 0 64px}.eyebrow{color:var(--green);font-size:12px;letter-spacing:.16em;font-weight:700}.top{display:flex;gap:28px;justify-content:space-between;align-items:end;margin:12px 0 30px}.top h1{font-size:clamp(34px,5vw,62px);line-height:1;margin:0;letter-spacing:-.045em;max-width:720px}.top p{color:var(--muted);max-width:390px;margin:0;line-height:1.55}.controls{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 24px}.controls button{appearance:none;border:1px solid var(--border);border-radius:999px;background:var(--node);color:var(--text);font:inherit;font-weight:650;padding:11px 17px;cursor:pointer}.controls button:hover,.controls button:focus-visible{border-color:var(--blue);outline:none}.controls button[aria-pressed="true"]{background:#1d3852;border-color:var(--blue)}.controls .attack[aria-pressed="true"]{background:#4a222b;border-color:var(--red)}.stage{background:linear-gradient(145deg,rgba(17,31,49,.96),rgba(9,22,36,.96));border:1px solid var(--border);border-radius:24px;padding:20px;box-shadow:0 30px 70px rgba(0,0,0,.25)}svg{display:block;width:100%;height:auto;min-height:470px}.node{fill:var(--node);stroke:var(--border);stroke-width:1.5}.node-title{fill:var(--text);font-size:16px;font-weight:700}.node-copy{fill:var(--muted);font-size:12px}.node-tag{fill:var(--green);font-size:10px;font-weight:700;letter-spacing:1px}.edge{fill:none;stroke:#536d87;stroke-width:2.5;stroke-linecap:round}.edge.active{stroke:var(--green);stroke-width:4;animation:pulse 1.15s ease-in-out infinite alternate}.edge.danger{stroke:var(--red);stroke-width:4;animation:pulse .6s ease-in-out infinite alternate}.guard{fill:#0d2a31;stroke:var(--green);stroke-width:2}.module{fill:#102531;stroke:#27685f;stroke-width:1.2}.decision{opacity:.22;transition:opacity .25s}.decision.active{opacity:1}.status{display:grid;grid-template-columns:1.1fr 1fr 1fr;gap:12px;margin-top:16px}.metric{border:1px solid var(--border);background:rgba(17,31,49,.7);border-radius:15px;padding:15px}.metric span{display:block;color:var(--muted);font-size:12px;margin-bottom:6px}.metric strong{font-size:16px}.detail{margin-top:16px;color:var(--muted);min-height:25px}.detail code{color:var(--text)}.foot{display:flex;justify-content:space-between;gap:20px;margin-top:24px;color:var(--muted);font-size:13px}.foot a{color:var(--text)}@keyframes pulse{to{filter:drop-shadow(0 0 6px currentColor)}}@media(prefers-reduced-motion:reduce){.edge.active,.edge.danger{animation:none}}@media(max-width:720px){.shell{padding-top:28px}.top{display:block}.top p{margin-top:18px}.stage{padding:8px;border-radius:16px;overflow-x:auto}.stage svg{width:900px}.status{grid-template-columns:1fr}.foot{display:block}.foot span{display:block;margin-top:8px}}
+    @media(max-width:720px){body{overflow-x:hidden}.shell{width:calc(100% - 32px);overflow:hidden}.top h1{font-size:30px;max-width:100%;overflow-wrap:anywhere}.top p,.detail,.foot{max-width:100%;overflow-wrap:anywhere}.stage{overflow:hidden;min-width:0}.stage svg{display:block;width:100%;max-width:100%;min-width:0;min-height:0}}
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <div class="eyebrow">SOLGUARD / PAYMENT CONTROL PLANE</div>
+    <header class="top">
+      <h1>Security before the signature.</h1>
+      <p>Trace a normal purchase, a suspicious request, or a compromised-agent drain attempt through the planned SolGuard gateway.</p>
+    </header>
+    <nav class="controls" aria-label="Architecture scenarios">
+      <button type="button" data-scenario="normal" aria-pressed="true">Normal payment</button>
+      <button type="button" data-scenario="review" aria-pressed="false">New recipient</button>
+      <button type="button" class="attack" data-scenario="attack" aria-pressed="false">Compromised agent</button>
+    </nav>
+    <section class="stage" aria-label="SolGuard transaction flow">
+      <svg viewBox="0 0 1080 520" role="img" aria-labelledby="diagramTitle diagramDesc">
+        <title id="diagramTitle">SolGuard pre-signing architecture</title>
+        <desc id="diagramDesc">A selectable payment request flows from an autonomous agent through a protocol adapter and four SolGuard controls before reaching, pausing, or being blocked ahead of the wallet signer.</desc>
+        <defs>
+          <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 10 5 0 10z" fill="context-stroke"/></marker>
+        </defs>
+        <path id="e1" class="edge active" marker-end="url(#a)" d="M186 261H270"/>
+        <path id="e2" class="edge active" marker-end="url(#a)" d="M436 261H490"/>
+        <path id="e3" class="edge active" marker-end="url(#a)" d="M804 261H880"/>
+        <path id="blockPath" class="edge" marker-end="url(#a)" d="M650 398V467H790" opacity="0"/>
+        <g transform="translate(28 198)"><rect class="node" width="158" height="126" rx="17"/><text class="node-tag" x="20" y="29">UNTRUSTED</text><text class="node-title" x="20" y="61">Autonomous agent</text><text id="agentRequest" class="node-copy" x="20" y="88">$0.05 API purchase</text><text id="agentRecipient" class="node-copy" x="20" y="108">Known recipient</text></g>
+        <g transform="translate(270 198)"><rect class="node" width="166" height="126" rx="17"/><text class="node-tag" x="20" y="29">NORMALIZE</text><text class="node-title" x="20" y="61">Protocol adapter</text><text class="node-copy" x="20" y="88">Pay.sh / x402</text><text class="node-copy" x="20" y="108">Canonical request</text></g>
+        <g transform="translate(490 101)"><rect class="guard" width="314" height="297" rx="22"/><text class="node-tag" x="22" y="31">PRE-SIGNING GATEWAY</text><text class="node-title" x="22" y="64">SolGuard</text><g transform="translate(22 88)"><rect class="module" width="128" height="70" rx="11"/><text class="node-title" x="14" y="29">Mandate</text><text id="mandateState" class="node-copy" x="14" y="51">Within limits</text><rect class="module" x="142" width="128" height="70" rx="11"/><text class="node-title" x="156" y="29">Integrity</text><text id="integrityState" class="node-copy" x="156" y="51">Nonce valid</text><rect class="module" y="84" width="128" height="70" rx="11"/><text class="node-title" x="14" y="113">Behaviour</text><text id="behaviourState" class="node-copy" x="14" y="135">Normal baseline</text><rect class="module" x="142" y="84" width="128" height="70" rx="11"/><text class="node-title" x="156" y="113">Privacy</text><text class="node-copy" x="156" y="135">Safe log copy</text></g><text class="node-copy" x="22" y="273">Hard policy always outranks heuristics.</text></g>
+        <g transform="translate(880 198)"><rect class="node" width="172" height="126" rx="17"/><text class="node-tag" x="20" y="29">ENFORCE</text><text class="node-title" x="20" y="61">Wallet signer</text><text id="walletState" class="node-copy" x="20" y="88">Authorization valid</text><text id="settleState" class="node-copy" x="20" y="108">Sandbox settles</text></g>
+        <g id="allow" class="decision active" transform="translate(505 432)"><rect width="96" height="40" rx="20" fill="#123f35" stroke="#36d6a5"/><text x="48" y="25" text-anchor="middle" fill="#e5fff7" font-size="12" font-weight="700">ALLOW</text></g>
+        <g id="approval" class="decision" transform="translate(615 432)"><rect width="164" height="40" rx="20" fill="#44371d" stroke="#efb647"/><text x="82" y="25" text-anchor="middle" fill="#fff2ce" font-size="12" font-weight="700">REQUIRE APPROVAL</text></g>
+        <g id="block" class="decision" transform="translate(793 432)"><rect width="96" height="40" rx="20" fill="#482129" stroke="#f26b78"/><text x="48" y="25" text-anchor="middle" fill="#ffe4e8" font-size="12" font-weight="700">BLOCK</text></g>
+      </svg>
+    </section>
+    <section class="status" aria-live="polite">
+      <div class="metric"><span>Decision</span><strong id="decisionText">ALLOW</strong></div>
+      <div class="metric"><span>Wallet result</span><strong id="walletResult">Signed once</strong></div>
+      <div class="metric"><span>Reason</span><strong id="reasonText">Mandate satisfied</strong></div>
+    </section>
+    <p class="detail" id="detail">A legitimate, low-value request reaches sandbox settlement with a request-bound authorization.</p>
+    <footer class="foot"><a href="../README.md">Back to repository documentation</a><span>Architecture target — implementation status remains tracked in the README.</span></footer>
+  </main>
+  <script>
+    const scenarios={
+      normal:{request:'$0.05 API purchase',recipient:'Known recipient',mandate:'Within limits',integrity:'Nonce valid',behaviour:'Normal baseline',wallet:'Authorization valid',settle:'Sandbox settles',decision:'ALLOW',walletResult:'Signed once',reason:'Mandate satisfied',detail:'A legitimate, low-value request reaches sandbox settlement with a request-bound authorization.',edge:'active'},
+      review:{request:'$0.05 API purchase',recipient:'First-seen recipient',mandate:'Recipient permitted',integrity:'Nonce valid',behaviour:'Recipient is new',wallet:'Awaiting approval',settle:'No settlement yet',decision:'REQUIRE_APPROVAL',walletResult:'Paused',reason:'Recipient first seen',detail:'The request is plausible but outside established behaviour, so signing pauses for explicit approval.',edge:'active'},
+      attack:{request:'$5,000 drain burst',recipient:'First-seen recipient',mandate:'Limit exceeded',integrity:'Burst observed',behaviour:'Compound drain',wallet:'No authorization',settle:'Funds unchanged',decision:'BLOCK',walletResult:'Signature refused',reason:'Hard limit + compound drain',detail:'The malicious path terminates before the wallet. No authorization is created and no funds move.',edge:'danger'}
+    };
+    const ids=['agentRequest','agentRecipient','mandateState','integrityState','behaviourState','walletState','settleState','decisionText','walletResult','reasonText','detail'];
+    function select(name){const s=scenarios[name];document.getElementById('agentRequest').textContent=s.request;document.getElementById('agentRecipient').textContent=s.recipient;document.getElementById('mandateState').textContent=s.mandate;document.getElementById('integrityState').textContent=s.integrity;document.getElementById('behaviourState').textContent=s.behaviour;document.getElementById('walletState').textContent=s.wallet;document.getElementById('settleState').textContent=s.settle;document.getElementById('decisionText').textContent=s.decision;document.getElementById('walletResult').textContent=s.walletResult;document.getElementById('reasonText').textContent=s.reason;document.getElementById('detail').textContent=s.detail;document.querySelectorAll('.decision').forEach(x=>x.classList.remove('active'));document.getElementById(name==='normal'?'allow':name==='review'?'approval':'block').classList.add('active');document.querySelectorAll('.edge').forEach(x=>x.classList.remove('active','danger'));['e1','e2','e3'].forEach(id=>document.getElementById(id).classList.add(s.edge));document.getElementById('e3').style.opacity=name==='attack'?'.18':'1';document.getElementById('blockPath').style.opacity=name==='attack'?'1':'0';document.getElementById('blockPath').classList.toggle('danger',name==='attack');document.querySelectorAll('button[data-scenario]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.scenario===name)));}
+    document.querySelectorAll('button[data-scenario]').forEach(button=>button.addEventListener('click',()=>select(button.dataset.scenario)));
+  </script>
+</body>
+</html>

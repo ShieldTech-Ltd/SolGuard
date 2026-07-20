@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="620" viewBox="0 0 1200 620" role="img" aria-labelledby="title desc">
+  <title id="title">SolGuard pre-signing payment security architecture</title>
+  <desc id="desc">An autonomous agent sends a payment request through protocol adapters and the SolGuard security gateway. Policy, behaviour, integrity, and privacy controls combine into allow, approval, or block decisions before the wallet signer.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#07111f"/>
+      <stop offset="1" stop-color="#0d1a2b"/>
+    </linearGradient>
+    <linearGradient id="guard" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#102b39"/>
+      <stop offset="1" stop-color="#123f45"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#000" flood-opacity=".28"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#7890a9"/>
+    </marker>
+    <style>
+      .title{font:700 34px system-ui,sans-serif;fill:#f4f8fb}.subtitle{font:400 16px system-ui,sans-serif;fill:#9fb0c2}.label{font:700 16px system-ui,sans-serif;fill:#f4f8fb}.small{font:400 13px system-ui,sans-serif;fill:#9fb0c2}.micro{font:700 11px system-ui,sans-serif;letter-spacing:1.4px;fill:#70f0c2}.node{fill:#111f31;stroke:#29405a;stroke-width:1.5}.control{fill:#0d2530;stroke:#1c665d;stroke-width:1.5}.line{fill:none;stroke:#7890a9;stroke-width:2;marker-end:url(#arrow)}
+    </style>
+  </defs>
+  <rect width="1200" height="620" rx="24" fill="url(#bg)"/>
+  <g transform="translate(54 50)">
+    <text class="micro" x="0" y="0">SOLGUARD / PAYMENT CONTROL PLANE</text>
+    <text class="title" x="0" y="48">Security before the signature</text>
+    <text class="subtitle" x="0" y="78">Every payment must satisfy delegated authority, integrity checks, and explainable risk controls.</text>
+  </g>
+
+  <path class="line" d="M216 305 H305"/>
+  <path class="line" d="M505 305 H570"/>
+  <path class="line" d="M910 305 H982"/>
+
+  <g filter="url(#shadow)">
+    <rect class="node" x="54" y="230" width="162" height="150" rx="18"/>
+    <circle cx="91" cy="270" r="17" fill="#1a334c"/>
+    <path d="M84 270h14M91 263v14" stroke="#70f0c2" stroke-width="2" stroke-linecap="round"/>
+    <text class="label" x="76" y="318">Autonomous agent</text>
+    <text class="small" x="76" y="345">Intent + payment request</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect class="node" x="305" y="230" width="200" height="150" rx="18"/>
+    <text class="micro" x="327" y="263">NORMALIZE</text>
+    <text class="label" x="327" y="301">Protocol adapter</text>
+    <text class="small" x="327" y="330">Pay.sh sandbox</text>
+    <text class="small" x="327" y="352">x402 / synthetic traffic</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="570" y="166" width="340" height="278" rx="22" fill="url(#guard)" stroke="#2ac69b" stroke-width="2"/>
+    <text class="micro" x="596" y="202">PRE-SIGNING SECURITY GATEWAY</text>
+    <text class="label" x="596" y="237">SolGuard decision engine</text>
+    <g transform="translate(596 260)">
+      <rect class="control" width="137" height="64" rx="12"/>
+      <text class="label" x="15" y="27">Mandate</text><text class="small" x="15" y="48">Hard policy</text>
+      <rect class="control" x="151" width="137" height="64" rx="12"/>
+      <text class="label" x="166" y="27">Integrity</text><text class="small" x="166" y="48">Replay + digest</text>
+      <rect class="control" y="78" width="137" height="64" rx="12"/>
+      <text class="label" x="15" y="105">Behaviour</text><text class="small" x="15" y="126">Compound risk</text>
+      <rect class="control" x="151" y="78" width="137" height="64" rx="12"/>
+      <text class="label" x="166" y="105">Privacy</text><text class="small" x="166" y="126">Safe metadata</text>
+    </g>
+    <text class="small" x="596" y="424">Severity: BLOCK &gt; REQUIRE_APPROVAL &gt; ALLOW</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect class="node" x="982" y="230" width="164" height="150" rx="18"/>
+    <text class="micro" x="1004" y="263">ENFORCE</text>
+    <text class="label" x="1004" y="301">Wallet signer</text>
+    <text class="small" x="1004" y="330">Valid authorization:</text>
+    <text class="small" x="1004" y="352">sign once or refuse</text>
+  </g>
+
+  <g transform="translate(570 488)">
+    <rect x="0" width="100" height="42" rx="21" fill="#123f35" stroke="#2ac69b"/><text class="small" x="27" y="26" fill="#dffcef">ALLOW</text>
+    <rect x="115" width="164" height="42" rx="21" fill="#3b311b" stroke="#e7aa35"/><text class="small" x="136" y="26" fill="#fff0c2">REQUIRE APPROVAL</text>
+    <rect x="294" width="100" height="42" rx="21" fill="#402027" stroke="#f05a6a"/><text class="small" x="323" y="26" fill="#ffe0e4">BLOCK</text>
+  </g>
+  <text class="small" x="54" y="578">The malicious path ends before wallet signing. Allowed traffic continues to sandbox settlement with an auditable decision receipt.</text>
+</svg>
