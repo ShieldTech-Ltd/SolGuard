@@ -40,12 +40,12 @@ A human authorizes a constrained mandate instead of approving every transaction:
 {
   "agent_id": "research-agent-01",
   "purpose": "Purchase verified research APIs",
-  "currency": "USDC",
+  "asset": "USDC",
   "max_single_payment": "2.00",
-  "max_total": "20.00",
   "allowed_recipients": ["weather-api", "market-data-api"],
-  "expires_at": "2026-07-26T00:00:00Z",
-  "single_use_authorizations": true
+  "blocked_recipients": ["attacker-wallet"],
+  "valid_from": "2026-07-25T09:00:00Z",
+  "expires_at": "2026-07-26T00:00:00Z"
 }
 ```
 
