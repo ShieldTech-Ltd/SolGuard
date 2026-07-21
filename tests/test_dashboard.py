@@ -206,9 +206,9 @@ def post(url: str) -> tuple[int, dict[str, JsonValue]]:
 @pytest.mark.parametrize(
     ("path", "content_type", "marker"),
     [
-        ("/", "text/html", "SolGuard"),
+        ("/", "text/html", "decision-value"),
         ("/styles.css", "text/css", "--background"),
-        ("/app.js", "text/javascript", "renderState"),
+        ("/app.js", "text/javascript", "renderDecisionSpotlight"),
     ],
 )
 def test_server_delivers_dashboard_assets(path: str, content_type: str, marker: str) -> None:
@@ -221,6 +221,22 @@ def test_server_delivers_dashboard_assets(path: str, content_type: str, marker: 
     assert headers["Cache-Control"] == "no-store"
     assert headers["X-Content-Type-Options"] == "nosniff"
     assert "default-src 'self'" in headers["Content-Security-Policy"]
+
+
+def test_stage_dashboard_packages_visible_enforcement_proof() -> None:
+    with running_server(runtime()) as base:
+        _, html, _ = get(f"{base}/")
+        _, javascript, _ = get(f"{base}/app.js")
+
+    assert "Stop the signature" in html
+    assert "ATTEMPTED VALUE BLOCKED" in html
+    assert 'id="signer-state"' in html
+    assert 'id="settlement-state"' in html
+    assert 'id="privacy-state"' in html
+    assert 'id="receipt-state"' in html
+    assert "No signing authorization reached the wallet" in javascript
+    assert "No settlement reference generated" in javascript
+    assert "redactionEvidence" in javascript
 
 
 def test_server_state_and_scenario_endpoints_return_runtime_data() -> None:

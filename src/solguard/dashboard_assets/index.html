@@ -3,45 +3,123 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Local SolGuard pre-signing security dashboard">
-  <title>SolGuard Security Console</title>
+  <meta name="description" content="Live SolGuard pre-signing security demonstration">
+  <title>SolGuard Live Security Console</title>
   <link rel="stylesheet" href="/styles.css">
   <script src="/app.js" defer></script>
 </head>
-<body>
+<body data-decision="idle">
+  <div class="background-grid" aria-hidden="true"></div>
   <main class="shell">
-    <header class="header">
-      <div>
-        <p class="eyebrow">SOLGUARD / PAYMENT CONTROL PLANE</p>
-        <h1>Security before the signature.</h1>
-        <p class="subtitle">Every value below comes from the local gateway currently processing simulated payment traffic.</p>
+    <header class="topbar">
+      <div class="brand-lockup">
+        <div class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 48 48" role="img">
+            <path d="M24 4 40 10v12c0 10.6-6.1 18.2-16 22C14.1 40.2 8 32.6 8 22V10l16-6Z" fill="none" stroke="currentColor" stroke-width="3"/>
+            <path d="m16.5 24 5 5 10-11" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"/>
+          </svg>
+        </div>
+        <div>
+          <p class="eyebrow">AUTONOMOUS PAYMENT DEFENCE</p>
+          <strong class="brand-name">SolGuard</strong>
+        </div>
       </div>
-      <div class="runtime-label" aria-label="Settlement environment">
-        <span class="runtime-dot" aria-hidden="true"></span>
-        Simulated settlement
+      <div class="environment" aria-label="Demonstration environment">
+        <span class="environment-pill"><i aria-hidden="true"></i>LOCAL ENGINE ONLINE</span>
+        <span>Simulated wallet · No real funds</span>
       </div>
     </header>
 
-    <section class="actions" aria-label="Demonstration controls">
-      <button type="button" data-action="normal">Run normal payment</button>
-      <button type="button" class="attack" data-action="attack">Trigger compromised agent</button>
-      <button type="button" class="secondary" data-action="reset">Reset local state</button>
-      <p id="action-status" role="status" aria-live="polite">Ready</p>
+    <section class="hero" aria-labelledby="hero-heading">
+      <div>
+        <p class="section-label">PRE-SIGNING SECURITY GATEWAY</p>
+        <h1 id="hero-heading">Stop the signature.<br><span>Stop the drain.</span></h1>
+      </div>
+      <p class="hero-copy">Every number and status on this screen is computed from the local gateway processing the demonstration traffic.</p>
     </section>
 
-    <section class="metrics" aria-label="Computed security metrics">
-      <article class="metric">
-        <span>Simulated wallet balance</span>
+    <section class="control-bar" aria-label="Live demonstration controls">
+      <div class="control-copy">
+        <span>LIVE SCENARIO</span>
+        <strong id="action-status" role="status" aria-live="polite">Ready for a payment request</strong>
+      </div>
+      <div class="actions">
+        <button type="button" data-action="normal"><span>01</span> Allow normal payment</button>
+        <button type="button" class="attack" data-action="attack"><span>02</span> Simulate wallet drain</button>
+        <button type="button" class="reset" data-action="reset" aria-label="Reset local demonstration">Reset</button>
+      </div>
+    </section>
+
+    <section class="decision-stage" aria-label="Latest pre-signing security proof">
+      <article class="decision-card" aria-live="polite">
+        <div class="decision-card-head">
+          <div>
+            <p class="section-label">LIVE GATEWAY DECISION</p>
+            <span id="decision-request">No request processed</span>
+          </div>
+          <span id="decision-latency" class="latency">NO DATA</span>
+        </div>
+        <div class="decision-main">
+          <span class="decision-indicator" aria-hidden="true"><i></i></span>
+          <div>
+            <strong id="decision-value" class="decision-value">STANDBY</strong>
+            <p id="decision-amount" class="decision-amount">Waiting for agent intent</p>
+          </div>
+        </div>
+        <p id="decision-copy" class="decision-copy">Run a normal payment or trigger the compromised-agent sequence to create live security evidence.</p>
+        <div id="reason-list" class="reason-list" aria-label="Decision reasons">
+          <span class="reason-chip neutral">NO DECISION YET</span>
+        </div>
+      </article>
+
+      <aside class="proof-panel" aria-label="Enforcement evidence">
+        <div class="proof-heading">
+          <div>
+            <p class="section-label">ENFORCEMENT EVIDENCE</p>
+            <h2>What reached the wallet?</h2>
+          </div>
+          <span class="live-badge"><i aria-hidden="true"></i>LIVE</span>
+        </div>
+        <div class="proof-grid">
+          <article class="proof-item">
+            <span>Wallet boundary</span>
+            <strong id="signer-state">WAITING</strong>
+            <small id="signer-detail">No payment evaluated</small>
+          </article>
+          <article class="proof-item">
+            <span>Settlement</span>
+            <strong id="settlement-state">NONE</strong>
+            <small id="settlement-detail">No settlement reference</small>
+          </article>
+          <article class="proof-item">
+            <span>Safe telemetry</span>
+            <strong id="privacy-state">READY</strong>
+            <small id="privacy-detail">Sanitizer awaiting metadata</small>
+          </article>
+          <article class="proof-item">
+            <span>Decision receipt</span>
+            <strong id="receipt-state">WAITING</strong>
+            <small id="receipt-detail">No receipt generated</small>
+          </article>
+        </div>
+      </aside>
+    </section>
+
+    <section class="metric-strip" aria-label="Runtime-computed metrics">
+      <article>
+        <span>SIMULATED WALLET BALANCE</span>
         <strong id="wallet-balance">Loading…</strong>
+        <small>Derived from the settlement adapter</small>
       </article>
-      <article class="metric">
-        <span>Blocked value</span>
+      <article class="blocked-metric">
+        <span>ATTEMPTED VALUE BLOCKED</span>
         <strong id="protected-value">Loading…</strong>
+        <small>Sum of gateway-blocked requests</small>
       </article>
-      <article class="metric">
-        <span>Gateway decisions</span>
+      <article>
+        <span>GATEWAY DECISIONS</span>
         <strong id="decision-total">Loading…</strong>
-        <small id="decision-breakdown"></small>
+        <small id="decision-breakdown">Waiting for runtime state</small>
       </article>
     </section>
 
@@ -52,21 +130,21 @@
       </div>
       <dl>
         <div><dt>Maximum payment</dt><dd id="mandate-limit">—</dd></div>
-        <div><dt>Recipient mode</dt><dd id="mandate-mode">—</dd></div>
-        <div><dt>Latest latency</dt><dd id="latest-latency">No data</dd></div>
+        <div><dt>Recipient policy</dt><dd id="mandate-mode">—</dd></div>
+        <div><dt>Security order</dt><dd>Policy before heuristics</dd></div>
       </dl>
     </section>
 
     <section class="feed" aria-labelledby="feed-heading">
       <div class="feed-heading">
         <div>
-          <p class="section-label">LIVE TRANSACTION FEED</p>
-          <h2 id="feed-heading">Pre-signing decisions</h2>
+          <p class="section-label">RUNTIME EVIDENCE STREAM</p>
+          <h2 id="feed-heading">Every request. Every decision.</h2>
         </div>
         <div class="legend" aria-label="Decision legend">
-          <span><i class="allow" aria-hidden="true"></i>Allow</span>
-          <span><i class="approval" aria-hidden="true"></i>Approval</span>
-          <span><i class="block" aria-hidden="true"></i>Block</span>
+          <span><i class="allow" aria-hidden="true"></i>Allowed</span>
+          <span><i class="approval" aria-hidden="true"></i>Approval required</span>
+          <span><i class="block" aria-hidden="true"></i>Blocked</span>
         </div>
       </div>
       <div id="event-list" class="event-list" aria-live="polite">
@@ -75,7 +153,7 @@
     </section>
 
     <footer>
-      <span>Local demonstration environment</span>
+      <span>Evidence-backed demonstration · Local simulation only</span>
       <span id="footer-state">Waiting for gateway state</span>
     </footer>
   </main>
