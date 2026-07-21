@@ -2,8 +2,7 @@
 
 > The pre-signing security gateway for autonomous agent payments.
 
-[![Status: architecture phase](https://img.shields.io/badge/status-architecture%20phase-f59e0b)](#project-status)
-[![Hackathon](https://img.shields.io/badge/Speed%20Build-2026-14f195)](#speed-build-2026)
+[![Status: verified demo](https://img.shields.io/badge/status-verified%20demo-14b8a6)](#project-status)
 [![Security model](https://img.shields.io/badge/security-fail%20closed-ef4444)](docs/THREAT_MODEL.md)
 
 ![SolGuard payment security architecture](docs/architecture.svg)
@@ -14,7 +13,7 @@ Autonomous agents can discover services, negotiate prices, and initiate payments
 Agent intent -> Payment request -> SolGuard -> ALLOW / REQUIRE_APPROVAL / BLOCK -> Wallet
 ```
 
-SolGuard is being developed for **Speed Build 2026**, whose scenario asks builders to secure financial infrastructure against a future autonomous-agent attack. The objective is a working, explainable demonstration—not a claim of production readiness.
+The current objective is a working, explainable security demonstration—not a claim of production readiness.
 
 ## Why SolGuard
 
@@ -134,7 +133,7 @@ The detailed security boundaries, attacker assumptions, and non-goals are docume
 
 ## Project status
 
-**Current phase: Phase 4 external sandbox integration.**
+**Current phase: evidence-backed demonstration release.**
 
 The protocol-independent contracts, simple mandate policy, four documented detection rules, fail-closed gateway, deterministic simulated settlement, metadata sanitizer, live dashboard, chained local audit receipts, adversarial security scenarios, basic request-expiry and per-agent nonce replay protection, single-use wallet authorization, one real Pay.sh sandbox path, and a deterministic end-to-end demonstration runner are implemented and covered by automated tests. Features are marked implemented only after they run successfully and pass the repository verification suite.
 
@@ -154,7 +153,7 @@ The protocol-independent contracts, simple mandate policy, four documented detec
 | Live dashboard | Implemented and tested |
 | Audit receipts and local event stream | Implemented and tested |
 | Deterministic end-to-end demo command | Implemented and verified in consecutive clean processes |
-| Recorded fallback demo | Planned |
+| Recorded fallback demo | Captured and verified against `v0.1.0-demo` |
 
 ## Development setup
 
@@ -235,12 +234,12 @@ This is an early product thesis, not evidence of existing customers, revenue, or
 - [Pay.sh sandbox integration](docs/PAYSH.md)
 - [Deterministic demonstration runner](docs/DEMO_RUNNER.md)
 - [Demo and validation plan](docs/DEMO_PLAN.md)
+- [Offline release evidence](evidence/README.md)
+- [Launch brief](docs/LAUNCH_BRIEF.md)
+- [Technical Q&A](docs/TECHNICAL_QA.md)
+- [Demonstration release review](docs/RELEASE_REVIEW.md)
 - [Security policy](SECURITY.md)
 - [Contribution and release workflow](CONTRIBUTING.md)
-
-## Speed Build 2026
-
-SolGuard is an independent hackathon project for Speed Build 2026 in London, 25–26 July 2026. References to Pay.sh, x402, Solana, or CoralOS describe intended interoperability or planned experiments unless a test in this repository proves otherwise. No affiliation or endorsement is implied.
 
 ## Author
 

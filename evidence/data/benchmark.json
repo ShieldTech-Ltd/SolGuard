@@ -1,0 +1,17 @@
+{
+  "decisions": {
+    "allow": 500,
+    "other": 0
+  },
+  "iterations": 500,
+  "latency_ms": {
+    "max": "0.5068",
+    "mean": "0.1515196",
+    "median": "0.1222",
+    "min": "0.0992",
+    "p95": "0.2561"
+  },
+  "method": "PaymentGateway.process with all local controls and in-memory simulated settlement",
+  "network_included": false,
+  "total_duration_ms": "129.1484000012133"
+}

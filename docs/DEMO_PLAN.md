@@ -4,7 +4,7 @@
 
 The demonstration succeeds only if a real sandbox payment passes through SolGuard and a malicious request is rejected before signing. Dashboard animation alone is insufficient.
 
-## Two-minute judge flow
+## Two-minute demonstration flow
 
 | Time | Action | Visible proof |
 |---|---|---|
@@ -16,9 +16,15 @@ The demonstration succeeds only if a real sandbox payment passes through SolGuar
 | 1:25–1:40 | Submit another legitimate request | Normal commerce continues |
 | 1:40–2:00 | Explain buyer and direction | Security control plane for agent wallets |
 
-## Automated evidence command
+## Automated evidence commands
 
 Run `uv run solguard-demo` for the Pay.sh sandbox purchase plus the complete local security sequence. Run `uv run solguard-demo --skip-paysh` for the external-service-independent fallback. Both paths emit measured, runtime-derived JSON evidence; the dashboard remains the visual presentation surface.
+
+The reviewed offline package is in [`../evidence/`](../evidence/README.md). It includes a
+75-second H.264 recording, four static runtime evidence states, three clean-process runs,
+one captured Pay.sh sandbox run, the local benchmark, and SHA-256 artifact hashes. Every
+asset refers to tag `v0.1.0-demo` at commit
+`dd0a157fd73955fb4257b915ee65ef20ba70c05c`.
 
 ## Required scenarios
 
@@ -67,3 +73,8 @@ Give a judge one safe control: **Trigger compromised agent**. The test inputs re
 ## Claims policy
 
 Say only what the current build proves. Describe unfinished protocol support as planned, simulated data as simulated, sandbox settlement as sandbox settlement, and recorded evidence as recorded evidence.
+
+Use the [launch brief](LAUNCH_BRIEF.md) for the buyer, product, design-partner ask, and
+commercial hypothesis. Use the [technical Q&A](TECHNICAL_QA.md) for implementation and
+production-readiness questions. The [release review](RELEASE_REVIEW.md) is the source of
+verified test, benchmark, repository-security, and limitation claims.

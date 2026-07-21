@@ -1,0 +1,58 @@
+{
+  "duration_ms": "5433.5796",
+  "external": {
+    "decision": "ALLOW",
+    "reason_codes": [],
+    "request_id": "paysh_bf9dbcd6e70b1cb225f039dd",
+    "settlement": {
+      "amount": "0.01",
+      "asset": "USDC",
+      "endpoint": "https://debugger.pay.sh/mpp/quote/AAPL",
+      "recipient": "D2rCsNov6rLEGWXjw7Zneo2gAvmh7gybjpCnk4GZkuDK",
+      "response_bytes": 70,
+      "response_digest": "sha256:1963a7acee6d053f8541701a7bcf121aeb4c3405b257e8cd51fe616956859fe2",
+      "settlement_reference": "paysh:sandbox:sha256:cc46dbd1701d23979e0538b18ab3bfeb50c62ada9d8cb2d8374046c922e464f9",
+      "settlement_type": "PAYSH_SANDBOX"
+    },
+    "settlement_type": "PAYSH_SANDBOX",
+    "status": "SETTLED"
+  },
+  "local": {
+    "attack": {
+      "decision": "BLOCK",
+      "reason_codes": [
+        "DETECTION_COMPOUND_DRAIN",
+        "DETECTION_RECIPIENT_NOVEL",
+        "DETECTION_VELOCITY"
+      ],
+      "settlement_reference": null,
+      "signing_state": "NOT_SIGNED"
+    },
+    "attack_attempts": 5,
+    "attack_decisions": {
+      "allowed": 3,
+      "blocked": 1,
+      "require_approval": 4,
+      "total": 8
+    },
+    "attack_wallet_balance": "970",
+    "baseline_decisions": {
+      "allowed": 3,
+      "blocked": 0,
+      "require_approval": 0,
+      "total": 3
+    },
+    "baseline_wallet_balance": "970",
+    "initial_wallet_balance": "1000",
+    "recovery_decisions": {
+      "allowed": 1,
+      "blocked": 0,
+      "require_approval": 0,
+      "total": 1
+    },
+    "recovery_wallet_balance": "990",
+    "settlement_type": "SIMULATED",
+    "value_protected": "25"
+  },
+  "status": "VERIFIED"
+}

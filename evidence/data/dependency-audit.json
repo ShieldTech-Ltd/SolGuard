@@ -1,0 +1,9 @@
+{
+  "audit_date": "2026-07-21",
+  "auditor": "pip-audit",
+  "command": "python -m uv run --with pip-audit pip-audit --requirement evidence/data/locked-requirements.txt --format=json --progress-spinner=off --timeout=15",
+  "dependencies_checked": 13,
+  "known_vulnerabilities": 0,
+  "result": "No known vulnerabilities found",
+  "scope": "Applicable third-party packages exported from uv.lock, including development dependencies"
+}
