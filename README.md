@@ -134,17 +134,19 @@ The detailed security boundaries, attacker assumptions, and non-goals are docume
 
 ## Project status
 
-**Current phase: architecture and repository foundation.**
+**Current phase: Phase 1 core implementation.**
 
-The architecture and demonstration requirements are documented. The payment engine, adapters, dashboard, and security controls are not yet represented as completed in this repository. Features will only be marked complete after implementation and automated verification.
+The protocol-independent contracts, simple mandate policy, four documented detection rules, fail-closed gateway, and deterministic simulated settlement are implemented and covered by automated tests. External payment adapters and the live dashboard remain planned. Features are marked implemented only after they run successfully and pass the repository verification suite.
 
 | Capability | Status |
 |---|---|
 | Architecture and threat model | Documented |
-| Financial mandate engine | Planned |
-| Pre-signing gateway | Planned |
+| Canonical payment contracts | Implemented and tested |
+| Simple financial mandate engine | Implemented and tested |
+| Pre-signing gateway | Implemented and tested |
 | Replay protection | Planned |
-| Behavioural detection | Planned |
+| Four-rule behavioural detection | Implemented and tested |
+| Deterministic simulated settlement | Implemented and tested |
 | Metadata sanitizer | Planned |
 | Pay.sh sandbox adapter | Planned |
 | x402 adapter | Stretch goal |
