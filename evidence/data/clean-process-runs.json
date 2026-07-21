@@ -1,0 +1,137 @@
+[
+  {
+    "duration_ms": "6.8929",
+    "external": {
+      "settlement_type": "PAYSH_SANDBOX",
+      "status": "SKIPPED"
+    },
+    "local": {
+      "attack": {
+        "decision": "BLOCK",
+        "reason_codes": [
+          "DETECTION_COMPOUND_DRAIN",
+          "DETECTION_RECIPIENT_NOVEL",
+          "DETECTION_VELOCITY"
+        ],
+        "settlement_reference": null,
+        "signing_state": "NOT_SIGNED"
+      },
+      "attack_attempts": 5,
+      "attack_decisions": {
+        "allowed": 3,
+        "blocked": 1,
+        "require_approval": 4,
+        "total": 8
+      },
+      "attack_wallet_balance": "970",
+      "baseline_decisions": {
+        "allowed": 3,
+        "blocked": 0,
+        "require_approval": 0,
+        "total": 3
+      },
+      "baseline_wallet_balance": "970",
+      "initial_wallet_balance": "1000",
+      "recovery_decisions": {
+        "allowed": 1,
+        "blocked": 0,
+        "require_approval": 0,
+        "total": 1
+      },
+      "recovery_wallet_balance": "990",
+      "settlement_type": "SIMULATED",
+      "value_protected": "25"
+    },
+    "status": "VERIFIED"
+  },
+  {
+    "duration_ms": "9.4199",
+    "external": {
+      "settlement_type": "PAYSH_SANDBOX",
+      "status": "SKIPPED"
+    },
+    "local": {
+      "attack": {
+        "decision": "BLOCK",
+        "reason_codes": [
+          "DETECTION_COMPOUND_DRAIN",
+          "DETECTION_RECIPIENT_NOVEL",
+          "DETECTION_VELOCITY"
+        ],
+        "settlement_reference": null,
+        "signing_state": "NOT_SIGNED"
+      },
+      "attack_attempts": 5,
+      "attack_decisions": {
+        "allowed": 3,
+        "blocked": 1,
+        "require_approval": 4,
+        "total": 8
+      },
+      "attack_wallet_balance": "970",
+      "baseline_decisions": {
+        "allowed": 3,
+        "blocked": 0,
+        "require_approval": 0,
+        "total": 3
+      },
+      "baseline_wallet_balance": "970",
+      "initial_wallet_balance": "1000",
+      "recovery_decisions": {
+        "allowed": 1,
+        "blocked": 0,
+        "require_approval": 0,
+        "total": 1
+      },
+      "recovery_wallet_balance": "990",
+      "settlement_type": "SIMULATED",
+      "value_protected": "25"
+    },
+    "status": "VERIFIED"
+  },
+  {
+    "duration_ms": "7.6594",
+    "external": {
+      "settlement_type": "PAYSH_SANDBOX",
+      "status": "SKIPPED"
+    },
+    "local": {
+      "attack": {
+        "decision": "BLOCK",
+        "reason_codes": [
+          "DETECTION_COMPOUND_DRAIN",
+          "DETECTION_RECIPIENT_NOVEL",
+          "DETECTION_VELOCITY"
+        ],
+        "settlement_reference": null,
+        "signing_state": "NOT_SIGNED"
+      },
+      "attack_attempts": 5,
+      "attack_decisions": {
+        "allowed": 3,
+        "blocked": 1,
+        "require_approval": 4,
+        "total": 8
+      },
+      "attack_wallet_balance": "970",
+      "baseline_decisions": {
+        "allowed": 3,
+        "blocked": 0,
+        "require_approval": 0,
+        "total": 3
+      },
+      "baseline_wallet_balance": "970",
+      "initial_wallet_balance": "1000",
+      "recovery_decisions": {
+        "allowed": 1,
+        "blocked": 0,
+        "require_approval": 0,
+        "total": 1
+      },
+      "recovery_wallet_balance": "990",
+      "settlement_type": "SIMULATED",
+      "value_protected": "25"
+    },
+    "status": "VERIFIED"
+  }
+]

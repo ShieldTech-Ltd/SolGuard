@@ -1,0 +1,410 @@
+{
+  "attack": {
+    "active_mandate": {
+      "agent_id": "demo-agent",
+      "allowed_recipients": [],
+      "asset": "USDC",
+      "blocked_recipients": [
+        "blocked-wallet"
+      ],
+      "max_single_payment": "100",
+      "policy_mode": "OPEN_WITH_HARD_BLOCKS"
+    },
+    "decision_counts": {
+      "allowed": 3,
+      "blocked": 1,
+      "require_approval": 4,
+      "total": 8
+    },
+    "events": [
+      {
+        "agent_id": "demo-agent",
+        "amount": "25",
+        "asset": "USDC",
+        "decision": "BLOCK",
+        "latency_ms": "0.0757",
+        "observed_at": "2026-07-25T10:00:18Z",
+        "reason_codes": [
+          "DETECTION_COMPOUND_DRAIN",
+          "DETECTION_RECIPIENT_NOVEL",
+          "DETECTION_VELOCITY"
+        ],
+        "receipt_digest": "sha256:60b89303b921758937da538ff3e2f46fea33c2ef17c70161ed161cdc6b94b8b8",
+        "recipient": "attacker-wallet",
+        "request_id": "demo-0008",
+        "sanitized_metadata": {
+          "data": {
+            "authorization": "[REDACTED:BEARER_TOKEN]",
+            "contact": "[REDACTED:EMAIL]",
+            "scenario": "compound-drain"
+          },
+          "limits_applied": [],
+          "redaction_counts": {
+            "BEARER_TOKEN": 1,
+            "EMAIL": 1
+          }
+        },
+        "sequence": 8,
+        "settlement_reference": null,
+        "signing_state": "NOT_SIGNED",
+        "traffic_type": "SIMULATED"
+      },
+      {
+        "agent_id": "demo-agent",
+        "amount": "25",
+        "asset": "USDC",
+        "decision": "REQUIRE_APPROVAL",
+        "latency_ms": "0.0448",
+        "observed_at": "2026-07-25T10:00:17Z",
+        "reason_codes": [
+          "DETECTION_RECIPIENT_NOVEL"
+        ],
+        "receipt_digest": "sha256:180c742ddee3119e39fcde1c953d00f1c420ed3c0d19cc7492bad35f649664c0",
+        "recipient": "attacker-wallet",
+        "request_id": "demo-0007",
+        "sanitized_metadata": {
+          "data": {
+            "authorization": "[REDACTED:BEARER_TOKEN]",
+            "contact": "[REDACTED:EMAIL]",
+            "scenario": "compound-drain"
+          },
+          "limits_applied": [],
+          "redaction_counts": {
+            "BEARER_TOKEN": 1,
+            "EMAIL": 1
+          }
+        },
+        "sequence": 7,
+        "settlement_reference": null,
+        "signing_state": "NOT_SIGNED",
+        "traffic_type": "SIMULATED"
+      },
+      {
+        "agent_id": "demo-agent",
+        "amount": "25",
+        "asset": "USDC",
+        "decision": "REQUIRE_APPROVAL",
+        "latency_ms": "0.0457",
+        "observed_at": "2026-07-25T10:00:16Z",
+        "reason_codes": [
+          "DETECTION_RECIPIENT_NOVEL"
+        ],
+        "receipt_digest": "sha256:3e3f4cdffe122444dd1513c13a92c17f29c9c663fc4a47b43376d7dc9b5ff5d9",
+        "recipient": "attacker-wallet",
+        "request_id": "demo-0006",
+        "sanitized_metadata": {
+          "data": {
+            "authorization": "[REDACTED:BEARER_TOKEN]",
+            "contact": "[REDACTED:EMAIL]",
+            "scenario": "compound-drain"
+          },
+          "limits_applied": [],
+          "redaction_counts": {
+            "BEARER_TOKEN": 1,
+            "EMAIL": 1
+          }
+        },
+        "sequence": 6,
+        "settlement_reference": null,
+        "signing_state": "NOT_SIGNED",
+        "traffic_type": "SIMULATED"
+      },
+      {
+        "agent_id": "demo-agent",
+        "amount": "25",
+        "asset": "USDC",
+        "decision": "REQUIRE_APPROVAL",
+        "latency_ms": "0.0515",
+        "observed_at": "2026-07-25T10:00:15Z",
+        "reason_codes": [
+          "DETECTION_RECIPIENT_NOVEL"
+        ],
+        "receipt_digest": "sha256:cfced3419aa128a80897cc35bbba11ab36cf8cd7badd21468835a431f9915ace",
+        "recipient": "attacker-wallet",
+        "request_id": "demo-0005",
+        "sanitized_metadata": {
+          "data": {
+            "authorization": "[REDACTED:BEARER_TOKEN]",
+            "contact": "[REDACTED:EMAIL]",
+            "scenario": "compound-drain"
+          },
+          "limits_applied": [],
+          "redaction_counts": {
+            "BEARER_TOKEN": 1,
+            "EMAIL": 1
+          }
+        },
+        "sequence": 5,
+        "settlement_reference": null,
+        "signing_state": "NOT_SIGNED",
+        "traffic_type": "SIMULATED"
+      },
+      {
+        "agent_id": "demo-agent",
+        "amount": "25",
+        "asset": "USDC",
+        "decision": "REQUIRE_APPROVAL",
+        "latency_ms": "0.0547",
+        "observed_at": "2026-07-25T10:00:14Z",
+        "reason_codes": [
+          "DETECTION_RECIPIENT_NOVEL"
+        ],
+        "receipt_digest": "sha256:0c4c3aa678a1710358fc3b3c42e3b3a13f0435daf9268bbc2ed1607135ad6bfe",
+        "recipient": "attacker-wallet",
+        "request_id": "demo-0004",
+        "sanitized_metadata": {
+          "data": {
+            "authorization": "[REDACTED:BEARER_TOKEN]",
+            "contact": "[REDACTED:EMAIL]",
+            "scenario": "compound-drain"
+          },
+          "limits_applied": [],
+          "redaction_counts": {
+            "BEARER_TOKEN": 1,
+            "EMAIL": 1
+          }
+        },
+        "sequence": 4,
+        "settlement_reference": null,
+        "signing_state": "NOT_SIGNED",
+        "traffic_type": "SIMULATED"
+      },
+      {
+        "agent_id": "demo-agent",
+        "amount": "10",
+        "asset": "USDC",
+        "decision": "ALLOW",
+        "latency_ms": "0.2093",
+        "observed_at": "2026-07-25T10:00:02Z",
+        "reason_codes": [],
+        "receipt_digest": "sha256:981cca1cc4c59f8e3a61d5fa503686f998436792fd9ed944d150aa4f4059dffc",
+        "recipient": "weather-api",
+        "request_id": "demo-0003",
+        "sanitized_metadata": {
+          "data": {
+            "scenario": "normal-api-purchase"
+          },
+          "limits_applied": [],
+          "redaction_counts": {}
+        },
+        "sequence": 3,
+        "settlement_reference": "simulated:sha256:06909c77a18d2d1050342820dee6f82301d51aadd3603b7ccc42ca3f4373b6c2",
+        "signing_state": "SIGNED_SIMULATED",
+        "traffic_type": "SIMULATED"
+      },
+      {
+        "agent_id": "demo-agent",
+        "amount": "10",
+        "asset": "USDC",
+        "decision": "ALLOW",
+        "latency_ms": "0.2661",
+        "observed_at": "2026-07-25T10:00:01Z",
+        "reason_codes": [],
+        "receipt_digest": "sha256:29fe79aa5aaea504b8cea6ec27a22dda29635b72b805485477cbf3ff1c2db9c9",
+        "recipient": "weather-api",
+        "request_id": "demo-0002",
+        "sanitized_metadata": {
+          "data": {
+            "scenario": "normal-api-purchase"
+          },
+          "limits_applied": [],
+          "redaction_counts": {}
+        },
+        "sequence": 2,
+        "settlement_reference": "simulated:sha256:377c214e3428ec46aec28d81d39e8eb3f9e808bebcf9f81147a104bc984ca0bb",
+        "signing_state": "SIGNED_SIMULATED",
+        "traffic_type": "SIMULATED"
+      },
+      {
+        "agent_id": "demo-agent",
+        "amount": "10",
+        "asset": "USDC",
+        "decision": "ALLOW",
+        "latency_ms": "0.3589",
+        "observed_at": "2026-07-25T10:00:00Z",
+        "reason_codes": [],
+        "receipt_digest": "sha256:cb3bb246e00c5358e711b3157323942827c2b39cf8616b085993e20a7a933923",
+        "recipient": "weather-api",
+        "request_id": "demo-0001",
+        "sanitized_metadata": {
+          "data": {
+            "scenario": "normal-api-purchase"
+          },
+          "limits_applied": [],
+          "redaction_counts": {}
+        },
+        "sequence": 1,
+        "settlement_reference": "simulated:sha256:22fa5e38e8904ca6f7e4f4aca959f22c739af17eeb4186f47863b8fc361d9644",
+        "signing_state": "SIGNED_SIMULATED",
+        "traffic_type": "SIMULATED"
+      }
+    ],
+    "latest_latency_ms": "0.0757",
+    "settlement_type": "SIMULATED",
+    "value_protected": "25",
+    "wallet_balance": "970"
+  },
+  "baseline": {
+    "active_mandate": {
+      "agent_id": "demo-agent",
+      "allowed_recipients": [],
+      "asset": "USDC",
+      "blocked_recipients": [
+        "blocked-wallet"
+      ],
+      "max_single_payment": "100",
+      "policy_mode": "OPEN_WITH_HARD_BLOCKS"
+    },
+    "decision_counts": {
+      "allowed": 3,
+      "blocked": 0,
+      "require_approval": 0,
+      "total": 3
+    },
+    "events": [
+      {
+        "agent_id": "demo-agent",
+        "amount": "10",
+        "asset": "USDC",
+        "decision": "ALLOW",
+        "latency_ms": "0.2093",
+        "observed_at": "2026-07-25T10:00:02Z",
+        "reason_codes": [],
+        "receipt_digest": "sha256:981cca1cc4c59f8e3a61d5fa503686f998436792fd9ed944d150aa4f4059dffc",
+        "recipient": "weather-api",
+        "request_id": "demo-0003",
+        "sanitized_metadata": {
+          "data": {
+            "scenario": "normal-api-purchase"
+          },
+          "limits_applied": [],
+          "redaction_counts": {}
+        },
+        "sequence": 3,
+        "settlement_reference": "simulated:sha256:06909c77a18d2d1050342820dee6f82301d51aadd3603b7ccc42ca3f4373b6c2",
+        "signing_state": "SIGNED_SIMULATED",
+        "traffic_type": "SIMULATED"
+      },
+      {
+        "agent_id": "demo-agent",
+        "amount": "10",
+        "asset": "USDC",
+        "decision": "ALLOW",
+        "latency_ms": "0.2661",
+        "observed_at": "2026-07-25T10:00:01Z",
+        "reason_codes": [],
+        "receipt_digest": "sha256:29fe79aa5aaea504b8cea6ec27a22dda29635b72b805485477cbf3ff1c2db9c9",
+        "recipient": "weather-api",
+        "request_id": "demo-0002",
+        "sanitized_metadata": {
+          "data": {
+            "scenario": "normal-api-purchase"
+          },
+          "limits_applied": [],
+          "redaction_counts": {}
+        },
+        "sequence": 2,
+        "settlement_reference": "simulated:sha256:377c214e3428ec46aec28d81d39e8eb3f9e808bebcf9f81147a104bc984ca0bb",
+        "signing_state": "SIGNED_SIMULATED",
+        "traffic_type": "SIMULATED"
+      },
+      {
+        "agent_id": "demo-agent",
+        "amount": "10",
+        "asset": "USDC",
+        "decision": "ALLOW",
+        "latency_ms": "0.3589",
+        "observed_at": "2026-07-25T10:00:00Z",
+        "reason_codes": [],
+        "receipt_digest": "sha256:cb3bb246e00c5358e711b3157323942827c2b39cf8616b085993e20a7a933923",
+        "recipient": "weather-api",
+        "request_id": "demo-0001",
+        "sanitized_metadata": {
+          "data": {
+            "scenario": "normal-api-purchase"
+          },
+          "limits_applied": [],
+          "redaction_counts": {}
+        },
+        "sequence": 1,
+        "settlement_reference": "simulated:sha256:22fa5e38e8904ca6f7e4f4aca959f22c739af17eeb4186f47863b8fc361d9644",
+        "signing_state": "SIGNED_SIMULATED",
+        "traffic_type": "SIMULATED"
+      }
+    ],
+    "latest_latency_ms": "0.2093",
+    "settlement_type": "SIMULATED",
+    "value_protected": "0",
+    "wallet_balance": "970"
+  },
+  "initial": {
+    "active_mandate": {
+      "agent_id": "demo-agent",
+      "allowed_recipients": [],
+      "asset": "USDC",
+      "blocked_recipients": [
+        "blocked-wallet"
+      ],
+      "max_single_payment": "100",
+      "policy_mode": "OPEN_WITH_HARD_BLOCKS"
+    },
+    "decision_counts": {
+      "allowed": 0,
+      "blocked": 0,
+      "require_approval": 0,
+      "total": 0
+    },
+    "events": [],
+    "latest_latency_ms": null,
+    "settlement_type": "SIMULATED",
+    "value_protected": "0",
+    "wallet_balance": "1000"
+  },
+  "recovery": {
+    "active_mandate": {
+      "agent_id": "demo-agent",
+      "allowed_recipients": [],
+      "asset": "USDC",
+      "blocked_recipients": [
+        "blocked-wallet"
+      ],
+      "max_single_payment": "100",
+      "policy_mode": "OPEN_WITH_HARD_BLOCKS"
+    },
+    "decision_counts": {
+      "allowed": 1,
+      "blocked": 0,
+      "require_approval": 0,
+      "total": 1
+    },
+    "events": [
+      {
+        "agent_id": "demo-agent",
+        "amount": "10",
+        "asset": "USDC",
+        "decision": "ALLOW",
+        "latency_ms": "0.2109",
+        "observed_at": "2026-07-25T10:00:00Z",
+        "reason_codes": [],
+        "receipt_digest": "sha256:cf85afa9a6a0a94223f49489171054718ea73e10ecf9a235c88bb6b3963634f2",
+        "recipient": "weather-api",
+        "request_id": "demo-0001",
+        "sanitized_metadata": {
+          "data": {
+            "scenario": "normal-api-purchase"
+          },
+          "limits_applied": [],
+          "redaction_counts": {}
+        },
+        "sequence": 1,
+        "settlement_reference": "simulated:sha256:22fa5e38e8904ca6f7e4f4aca959f22c739af17eeb4186f47863b8fc361d9644",
+        "signing_state": "SIGNED_SIMULATED",
+        "traffic_type": "SIMULATED"
+      }
+    ],
+    "latest_latency_ms": "0.2109",
+    "settlement_type": "SIMULATED",
+    "value_protected": "0",
+    "wallet_balance": "990"
+  }
+}

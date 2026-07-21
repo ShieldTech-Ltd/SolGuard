@@ -1,0 +1,81 @@
+{
+  "artifacts": [
+    {
+      "bytes": 2256,
+      "path": "evidence/README.md",
+      "sha256": "acc0090a141d8202e48e28c017ac1190179fbe2f677d30dd14ab6ec23473bddf"
+    },
+    {
+      "bytes": 400,
+      "path": "evidence/data/benchmark.json",
+      "sha256": "d8ca57833e3c782cd36f4ff71cb3f833ab8a6d1cb147ef453d217691cca4d281"
+    },
+    {
+      "bytes": 3458,
+      "path": "evidence/data/clean-process-runs.json",
+      "sha256": "29cbde326d289f7745f9bb5423d3620be56d97acf679ba82a177170d6ef28bb9"
+    },
+    {
+      "bytes": 431,
+      "path": "evidence/data/dependency-audit.json",
+      "sha256": "29abe2f4ef97395343461fa17420f86583395daaac16051d37fa409c09023ed3"
+    },
+    {
+      "bytes": 1666,
+      "path": "evidence/data/external-demo-run.json",
+      "sha256": "f3a3d9cc5b7a4e6a998565233b3582553d60c23b11a2d840a9e882918bdbf3e4"
+    },
+    {
+      "bytes": 764,
+      "path": "evidence/data/locked-requirements.txt",
+      "sha256": "2903b2305d490b9947b12c9817efa5e5ace6cfd1dd431211569c2d4258a49a57"
+    },
+    {
+      "bytes": 13135,
+      "path": "evidence/data/runtime-checkpoints.json",
+      "sha256": "6f22fb7d89610486a5b013d4b1cfdeece7c92eb34fffa2d4ebfb4e498bc597c5"
+    },
+    {
+      "bytes": 1825,
+      "path": "evidence/repository-qr.png",
+      "sha256": "23446909c3bce39273741aa9c4bdf1a591ff700e7155807e0dfb57358bdeb04a"
+    },
+    {
+      "bytes": 48448,
+      "path": "evidence/screenshots/attack.png",
+      "sha256": "31d94c52fb865fdfd36a99e6cdcd2c6284fff2c7f0f9d849cf1d7a4b007e1b4a"
+    },
+    {
+      "bytes": 53035,
+      "path": "evidence/screenshots/blocked-wallet.png",
+      "sha256": "10986e9ece9bc4b599cda98edbc2182ae34650827eacee8f756b47641f12fb93"
+    },
+    {
+      "bytes": 48345,
+      "path": "evidence/screenshots/normal.png",
+      "sha256": "3f3d04c6ecb1d8c2622538e6b841c9e30090cd444ad0b9f15cfc949e98151e80"
+    },
+    {
+      "bytes": 65481,
+      "path": "evidence/screenshots/recovery.png",
+      "sha256": "d1ff9fca80ea1e938b13d20dc40279fdac3cb847867daad6b7b95f9670f2f592"
+    },
+    {
+      "bytes": 736025,
+      "path": "evidence/solguard-offline-demo.mp4",
+      "sha256": "91cc9a7340c8f8425d3b28bf0939b040d6b32f7bb5d1e55cb83c947173614ce3"
+    }
+  ],
+  "claims": {
+    "clean_process_runs": 3,
+    "external_status": "SETTLED",
+    "recording_duration_seconds": 75
+  },
+  "labels": [
+    "PAYSH_SANDBOX",
+    "SIMULATED"
+  ],
+  "repository": "https://github.com/ShieldTech-Ltd/SolGuard",
+  "source_commit": "dd0a157fd73955fb4257b915ee65ef20ba70c05c",
+  "video": "evidence/solguard-offline-demo.mp4"
+}
