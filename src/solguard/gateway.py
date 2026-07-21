@@ -11,6 +11,7 @@ from decimal import Decimal
 from time import perf_counter_ns
 from typing import Protocol
 
+from solguard.authorization import AuthorizationRejected, WalletAuthorizationGuard
 from solguard.contracts import (
     AgentMandate,
     ContractValidationError,
@@ -55,7 +56,7 @@ class SettlementAdapter(Protocol):
     """Minimal settlement boundary used by the Phase 1 gateway."""
 
     def settle(
-        self, request: PaymentRequest, authorization: SigningAuthorization
+        self, request: PaymentRequest, authorization: SigningAuthorization | None
     ) -> SettlementResult: ...
 
 
@@ -141,6 +142,15 @@ class PaymentGateway:
             authorization = self._authorization(request, observed_at=observed_at)
             try:
                 settlement_result = self._settlement.settle(request, authorization)
+            except AuthorizationRejected as exc:
+                return self._blocked_authorization(
+                    request,
+                    rejection=exc,
+                    integrity=integrity_result,
+                    policy=policy_result,
+                    detection=detection_result,
+                    started_ns=started_ns,
+                )
             except SettlementUnavailable as exc:
                 return self._blocked_unavailable(
                     request,
@@ -241,6 +251,32 @@ class PaymentGateway:
             reason_codes=(ReasonCode.SETTLEMENT_INSUFFICIENT_FUNDS,),
             request_digest=request.digest,
             evidence=evidence,
+        )
+        return GatewayOutcome(result=result, settlement=None)
+
+    def _blocked_authorization(
+        self,
+        request: PaymentRequest,
+        *,
+        rejection: AuthorizationRejected,
+        integrity: IntegrityResult,
+        policy: PolicyResult,
+        detection: DetectionResult,
+        started_ns: int,
+    ) -> GatewayOutcome:
+        result = DecisionResult.create(
+            request_id=request.request_id,
+            decision=Decision.BLOCK,
+            reason_codes=(rejection.reason_code,),
+            request_digest=request.digest,
+            evidence={
+                "detection": dict(detection.evidence),
+                "integrity": dict(integrity.evidence),
+                "latency_ms": self._elapsed_ms(started_ns),
+                "policy": dict(policy.evidence),
+                "settlement": None,
+                "stage": "WALLET_AUTHORIZATION",
+            },
         )
         return GatewayOutcome(result=result, settlement=None)
 
@@ -367,10 +403,14 @@ def build_simulated_gateway(
 
     if any(not isinstance(mandate, AgentMandate) for mandate in mandates.values()):
         raise ValueError("all mandates must be validated AgentMandate instances")
+    active_clock = clock or (lambda: datetime.now(UTC))
     return PaymentGateway(
         policy=MandatePolicyEngine(mandates),
         detection=BehaviourEngine(),
-        settlement=SimulatedSettlement(balances),
-        clock=clock,
+        settlement=SimulatedSettlement(
+            balances,
+            authorization_guard=WalletAuthorizationGuard(clock=active_clock),
+        ),
+        clock=active_clock,
         timer_ns=timer_ns,
     )

@@ -64,9 +64,9 @@ Every invariant maps to executable evidence:
 
 | Invariant | Executable test | Current boundary |
 |---|---|---|
-| No signing for a non-allowed request | `test_end_to_end_attack_never_reaches_signer_or_changes_post_baseline_balance` | Gateway and simulated settlement; wallet-side expiry enforcement remains planned |
+| No signing for a non-allowed request | `test_end_to_end_attack_never_reaches_signer_or_changes_post_baseline_balance` | Gateway plus simulated and Pay.sh wallet boundaries |
 | Authorization binds one canonical request | `test_authorization_digest_cannot_settle_a_modified_request` | Canonical digest binding in simulated settlement |
-| Consumed nonce is not accepted twice | `test_gateway_allows_fresh_request_then_blocks_reused_nonce_before_settlement` | Per-agent, process-local request nonce store |
+| Consumed authorization or nonce is not accepted twice | `test_gateway_allows_fresh_request_then_blocks_reused_nonce_before_settlement` and `test_valid_authorization_is_returned_and_consumed_once` | Separate process-local request and wallet stores |
 | Hard policy cannot be reduced | `test_hard_recipient_block_cannot_be_reduced_by_clean_behaviour` | Gateway decision combination |
 | Blocked traffic cannot poison baseline | `test_blocked_poisoning_attempt_cannot_change_clean_baseline` | Clean-only behavioural state |
 | Security-path failure cannot allow | `test_security_dependency_failures_block_without_leaking_details` and `test_nonce_store_failure_fails_closed_without_leaking_details` | Policy, detection, settlement, and nonce-store injection |

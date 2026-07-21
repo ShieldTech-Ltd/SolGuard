@@ -16,6 +16,10 @@ The demonstration succeeds only if a real sandbox payment passes through SolGuar
 | 1:25–1:40 | Submit another legitimate request | Normal commerce continues |
 | 1:40–2:00 | Explain buyer and direction | Security control plane for agent wallets |
 
+## Automated evidence command
+
+Run `uv run solguard-demo` for the Pay.sh sandbox purchase plus the complete local security sequence. Run `uv run solguard-demo --skip-paysh` for the external-service-independent fallback. Both paths emit measured, runtime-derived JSON evidence; the dashboard remains the visual presentation surface.
+
 ## Required scenarios
 
 | Scenario | Expected decision |

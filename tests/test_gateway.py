@@ -9,6 +9,7 @@ from typing import cast
 
 import pytest
 
+from solguard.authorization import WalletAuthorizationGuard
 from solguard.contracts import (
     AgentMandate,
     Decision,
@@ -47,7 +48,10 @@ def gateway(
     adapter = (
         settlement
         if settlement is not None
-        else SimulatedSettlement({"research-agent-01": Decimal("100")})
+        else SimulatedSettlement(
+            {"research-agent-01": Decimal("100")},
+            authorization_guard=WalletAuthorizationGuard(clock=lambda: NOW),
+        )
     )
     ticks = timer(timer_values)
     instance = PaymentGateway(
@@ -196,7 +200,9 @@ class BrokenDetection(BehaviourEngine):
 
 class BrokenSettlement(SimulatedSettlement):
     def settle(
-        self, payment: PaymentRequest, authorization: SigningAuthorization
+        self,
+        payment: PaymentRequest,
+        authorization: SigningAuthorization | None,
     ) -> SimulatedSettlementResult:
         del payment, authorization
         self._attempt_count += 1

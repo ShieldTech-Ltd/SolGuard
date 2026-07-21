@@ -7,7 +7,8 @@ from decimal import Decimal
 
 import pytest
 
-from solguard.contracts import PaymentRequest, SigningAuthorization
+from solguard.authorization import AuthorizationRejected, WalletAuthorizationGuard
+from solguard.contracts import PaymentRequest, ReasonCode, SigningAuthorization
 from solguard.simulation import (
     InsufficientSimulatedFunds,
     SimulatedSettlement,
@@ -20,10 +21,13 @@ def request(**overrides: object) -> PaymentRequest:
     return PaymentRequest.from_dict(payment_data(**overrides))
 
 
-def authorization(payment: PaymentRequest) -> SigningAuthorization:
+def authorization(
+    payment: PaymentRequest,
+    authorization_id: str = "auth_test",
+) -> SigningAuthorization:
     issued_at = datetime(2026, 7, 25, 10, 0, tzinfo=UTC)
     return SigningAuthorization(
-        authorization_id="auth_test",
+        authorization_id=authorization_id,
         request_id=payment.request_id,
         request_digest=payment.digest,
         issued_at=issued_at,
@@ -33,7 +37,12 @@ def authorization(payment: PaymentRequest) -> SigningAuthorization:
 
 def test_simulated_settlement_computes_balance_and_reference() -> None:
     payment = request(amount="5")
-    adapter = SimulatedSettlement({payment.agent_id: Decimal("100")})
+    adapter = SimulatedSettlement(
+        {payment.agent_id: Decimal("100")},
+        authorization_guard=WalletAuthorizationGuard(
+            clock=lambda: authorization(payment).issued_at
+        ),
+    )
 
     result = adapter.settle(payment, authorization(payment))
 
@@ -55,10 +64,15 @@ def test_simulated_settlement_computes_balance_and_reference() -> None:
 
 def test_simulated_reference_changes_with_real_sequence() -> None:
     payment = request(amount="5")
-    adapter = SimulatedSettlement({payment.agent_id: Decimal("100")})
+    adapter = SimulatedSettlement(
+        {payment.agent_id: Decimal("100")},
+        authorization_guard=WalletAuthorizationGuard(
+            clock=lambda: authorization(payment).issued_at
+        ),
+    )
 
-    first = adapter.settle(payment, authorization(payment))
-    second = adapter.settle(payment, authorization(payment))
+    first = adapter.settle(payment, authorization(payment, "auth_first"))
+    second = adapter.settle(payment, authorization(payment, "auth_second"))
 
     assert first.settlement_reference != second.settlement_reference
     assert second.balance_after == Decimal("90")
@@ -80,10 +94,14 @@ def test_simulated_settlement_rejects_mismatched_request_id() -> None:
         issued_at=auth.issued_at,
         expires_at=auth.expires_at,
     )
-    adapter = SimulatedSettlement({payment.agent_id: Decimal("100")})
+    adapter = SimulatedSettlement(
+        {payment.agent_id: Decimal("100")},
+        authorization_guard=WalletAuthorizationGuard(clock=lambda: auth.issued_at),
+    )
 
-    with pytest.raises(SimulatedSettlementError, match="request_id"):
+    with pytest.raises(AuthorizationRejected) as captured:
         adapter.settle(payment, mismatched)
+    assert captured.value.reason_code is ReasonCode.AUTHORIZATION_MISMATCH
 
 
 def test_simulated_settlement_rejects_mismatched_digest() -> None:
@@ -96,10 +114,14 @@ def test_simulated_settlement_rejects_mismatched_digest() -> None:
         issued_at=auth.issued_at,
         expires_at=auth.expires_at,
     )
-    adapter = SimulatedSettlement({payment.agent_id: Decimal("100")})
+    adapter = SimulatedSettlement(
+        {payment.agent_id: Decimal("100")},
+        authorization_guard=WalletAuthorizationGuard(clock=lambda: auth.issued_at),
+    )
 
-    with pytest.raises(SimulatedSettlementError, match="digest"):
+    with pytest.raises(AuthorizationRejected) as captured:
         adapter.settle(payment, mismatched)
+    assert captured.value.reason_code is ReasonCode.AUTHORIZATION_MISMATCH
 
 
 def test_simulated_settlement_requires_configured_balance() -> None:

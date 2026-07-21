@@ -22,4 +22,4 @@ The store exposes one atomic `consume_if_unused` operation so the security decis
 
 `InMemoryNonceStore` is thread-safe but process-local and non-durable. Restarting the process clears replay state, and separate instances do not coordinate. Production deployment requires an atomic durable store, authenticated tenant isolation, retention controls, and operational monitoring.
 
-Request-nonce replay protection is distinct from single-use authorization enforcement at the wallet boundary. Wallet-bound authorization consumption remains a separate planned control.
+Request-nonce replay protection is distinct from single-use authorization enforcement at the wallet boundary. The implemented wallet guard maintains a separate process-local store because request observation and signing authority are different security boundaries.
