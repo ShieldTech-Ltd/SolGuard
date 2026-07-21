@@ -145,7 +145,14 @@ x402 client --------> canonical request -> SolGuard -> signing authorization
 Synthetic demo ----/
 ```
 
-The Pay.sh adapter implements one optional MPP localnet sandbox path through the official Pay CLI. It converts the unsigned HTTP 402 challenge into the canonical request before gateway evaluation and invokes the external command only after `ALLOW`. x402 and additional adapters remain stretch goals and must not destabilize the simulated core demonstration.
+The Pay.sh adapter implements one optional MPP localnet sandbox path through the official Pay CLI. It converts the unsigned HTTP 402 challenge into the canonical request before gateway evaluation and invokes the external command only after `ALLOW`.
+
+The x402 adapter strictly decodes a v2 `PAYMENT-REQUIRED` envelope, selects one official
+Solana-devnet USDC `exact` requirement, and binds the complete requirement digest into
+the canonical request. Its injected payment-payload signer is reachable only after
+`ALLOW` and single-use wallet authorization. The current x402 settlement result is
+explicitly simulated; it does not contact a facilitator or network. Additional adapters
+must not destabilize the protocol-independent core demonstration.
 
 ## 8. Performance target
 

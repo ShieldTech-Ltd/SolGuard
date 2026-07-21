@@ -32,6 +32,7 @@ dependencies = []
 solguard-dashboard = "solguard.dashboard:main"
 solguard-demo = "solguard.demo:main"
 solguard-paysh = "solguard.paysh:main"
+solguard-x402-demo = "solguard.x402:main"
 
 [dependency-groups]
 dev = [

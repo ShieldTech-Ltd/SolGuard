@@ -149,7 +149,7 @@ The protocol-independent contracts, simple mandate policy, four documented detec
 | Deterministic simulated settlement | Implemented and tested |
 | Metadata sanitizer | Implemented and tested |
 | Pay.sh sandbox adapter | Implemented, tested, and exercised against the official sandbox |
-| x402 adapter | Stretch goal |
+| x402 v2 adapter | Solana-devnet mapping and pre-signing simulation implemented and tested; no network settlement |
 | Live dashboard | Implemented and tested |
 | Audit receipts and local event stream | Implemented and tested |
 | Deterministic end-to-end demo command | Implemented and verified in consecutive clean processes |
@@ -204,6 +204,15 @@ Run the same security proof without any external dependency:
 uv run solguard-demo --skip-paysh
 ```
 
+Run the deterministic x402 v2 Solana-devnet-labelled signing simulation:
+
+```bash
+uv run solguard-x402-demo
+```
+
+This path validates official v2 envelopes and proves that a policy block never reaches
+the injected payload signer. It does not create or settle a real Solana transaction.
+
 ## Build order
 
 1. Mandate schema and deterministic policy engine
@@ -232,12 +241,14 @@ This is an early product thesis, not evidence of existing customers, revenue, or
 - [Request integrity and replay protection](docs/INTEGRITY.md)
 - [Single-use wallet authorization](docs/AUTHORIZATION.md)
 - [Pay.sh sandbox integration](docs/PAYSH.md)
+- [x402 v2 Solana-devnet adapter](docs/X402.md)
 - [Deterministic demonstration runner](docs/DEMO_RUNNER.md)
 - [Demo and validation plan](docs/DEMO_PLAN.md)
 - [Offline release evidence](evidence/README.md)
 - [Launch brief](docs/LAUNCH_BRIEF.md)
 - [Technical Q&A](docs/TECHNICAL_QA.md)
 - [Demonstration release review](docs/RELEASE_REVIEW.md)
+- [Submission requirements register](docs/SUBMISSION_REQUIREMENTS.md)
 - [Security policy](SECURITY.md)
 - [Contribution and release workflow](CONTRIBUTING.md)
 
