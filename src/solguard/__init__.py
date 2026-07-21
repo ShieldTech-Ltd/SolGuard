@@ -5,6 +5,7 @@ from solguard.contracts import AgentMandate, Decision, DecisionResult, PaymentRe
 from solguard.dashboard import DashboardStore, DemoRuntime
 from solguard.detection import BehaviourEngine, DetectionSignal
 from solguard.gateway import GatewayOutcome, PaymentGateway, build_simulated_gateway
+from solguard.integrity import InMemoryNonceStore, RequestIntegrityGuard
 from solguard.policy import MandatePolicyEngine
 from solguard.privacy import MetadataSanitizer, RedactionCategory, SanitizationLimits
 from solguard.simulation import SimulatedSettlement
@@ -20,11 +21,13 @@ __all__ = [
     "DemoRuntime",
     "DetectionSignal",
     "GatewayOutcome",
+    "InMemoryNonceStore",
     "MandatePolicyEngine",
     "MetadataSanitizer",
     "PaymentGateway",
     "PaymentRequest",
     "RedactionCategory",
+    "RequestIntegrityGuard",
     "SanitizationLimits",
     "SimulatedSettlement",
     "__version__",

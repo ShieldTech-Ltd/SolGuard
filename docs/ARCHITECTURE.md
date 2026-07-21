@@ -40,13 +40,14 @@ Sensitive values are redacted before persistence or display. The original reques
 
 ### 3.4 Verify integrity
 
-The integrity guard validates:
+The basic request integrity guard currently validates:
 
-- Unique nonce or authorization identifier
-- Request expiry and mandate expiry
-- Amount, asset, recipient, and purpose binding
-- Canonical request digest
-- Single-use semantics where required
+- A non-empty canonical request nonce
+- Request expiry at the exact gateway-clock boundary
+- Atomic, per-agent nonce consumption
+- Replay rejection before policy, detection, or settlement
+
+Canonical request digests bind later decisions and simulated settlement to the exact request. Mandate-expiry enforcement, durable replay coordination, and wallet-bound single-use authorization remain separate controls rather than hidden behavior in this basic guard.
 
 ### 3.5 Enforce hard policy
 

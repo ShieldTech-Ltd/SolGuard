@@ -22,6 +22,7 @@ from solguard.contracts import (
     format_amount,
 )
 from solguard.detection import BehaviourEngine, DetectionResult, DetectionSignal
+from solguard.integrity import IntegrityResult, RequestIntegrityGuard
 from solguard.policy import MandatePolicyEngine, PolicyResult
 from solguard.simulation import (
     InsufficientSimulatedFunds,
@@ -42,6 +43,12 @@ class DetectionEvaluator(Protocol):
     def evaluate(self, request: PaymentRequest, *, observed_at: datetime) -> DetectionResult: ...
 
     def record_allowed(self, request: PaymentRequest) -> None: ...
+
+
+class IntegrityEvaluator(Protocol):
+    """Basic request freshness and replay interface used by the gateway."""
+
+    def evaluate(self, request: PaymentRequest, *, observed_at: datetime) -> IntegrityResult: ...
 
 
 class SettlementAdapter(Protocol):
@@ -71,12 +78,14 @@ class PaymentGateway:
         policy: PolicyEvaluator,
         detection: DetectionEvaluator,
         settlement: SettlementAdapter,
+        integrity: IntegrityEvaluator | None = None,
         clock: Callable[[], datetime] | None = None,
         timer_ns: Callable[[], int] | None = None,
     ) -> None:
         self._policy = policy
         self._detection = detection
         self._settlement = settlement
+        self._integrity = integrity if integrity is not None else RequestIntegrityGuard()
         self._clock = clock or (lambda: datetime.now(UTC))
         self._timer_ns = timer_ns or perf_counter_ns
 
@@ -94,6 +103,13 @@ class PaymentGateway:
 
         try:
             observed_at = self._clock()
+            integrity_result = self._integrity.evaluate(request, observed_at=observed_at)
+            if integrity_result.decision is Decision.BLOCK:
+                return self._blocked_integrity(
+                    request,
+                    integrity=integrity_result,
+                    started_ns=started_ns,
+                )
             policy_result = self._policy.evaluate(request)
             detection_result = self._detection.evaluate(request, observed_at=observed_at)
             if (
@@ -103,6 +119,7 @@ class PaymentGateway:
                 return self._outcome(
                     request=request,
                     decision=Decision.BLOCK,
+                    integrity=integrity_result,
                     policy=policy_result,
                     detection=detection_result,
                     settlement=None,
@@ -113,6 +130,7 @@ class PaymentGateway:
                 return self._outcome(
                     request=request,
                     decision=Decision.REQUIRE_APPROVAL,
+                    integrity=integrity_result,
                     policy=policy_result,
                     detection=detection_result,
                     settlement=None,
@@ -126,6 +144,7 @@ class PaymentGateway:
             except InsufficientSimulatedFunds:
                 return self._blocked_settlement(
                     request,
+                    integrity=integrity_result,
                     policy=policy_result,
                     detection=detection_result,
                     started_ns=started_ns,
@@ -134,6 +153,7 @@ class PaymentGateway:
             return self._outcome(
                 request=request,
                 decision=Decision.ALLOW,
+                integrity=integrity_result,
                 policy=policy_result,
                 detection=detection_result,
                 settlement=settlement_result,
@@ -161,6 +181,7 @@ class PaymentGateway:
         *,
         request: PaymentRequest,
         decision: Decision,
+        integrity: IntegrityResult,
         policy: PolicyResult,
         detection: DetectionResult,
         settlement: SimulatedSettlementResult | None,
@@ -169,6 +190,7 @@ class PaymentGateway:
     ) -> GatewayOutcome:
         evidence: dict[str, object] = {
             "detection": dict(detection.evidence),
+            "integrity": dict(integrity.evidence),
             "latency_ms": self._elapsed_ms(started_ns),
             "policy": dict(policy.evidence),
             "settlement": settlement.to_dict() if settlement is not None else None,
@@ -188,12 +210,14 @@ class PaymentGateway:
         self,
         request: PaymentRequest,
         *,
+        integrity: IntegrityResult,
         policy: PolicyResult,
         detection: DetectionResult,
         started_ns: int,
     ) -> GatewayOutcome:
         evidence: dict[str, object] = {
             "detection": dict(detection.evidence),
+            "integrity": dict(integrity.evidence),
             "latency_ms": self._elapsed_ms(started_ns),
             "policy": dict(policy.evidence),
             "settlement": {
@@ -208,6 +232,26 @@ class PaymentGateway:
             reason_codes=(ReasonCode.SETTLEMENT_INSUFFICIENT_FUNDS,),
             request_digest=request.digest,
             evidence=evidence,
+        )
+        return GatewayOutcome(result=result, settlement=None)
+
+    def _blocked_integrity(
+        self,
+        request: PaymentRequest,
+        *,
+        integrity: IntegrityResult,
+        started_ns: int,
+    ) -> GatewayOutcome:
+        result = DecisionResult.create(
+            request_id=request.request_id,
+            decision=Decision.BLOCK,
+            reason_codes=integrity.reason_codes,
+            request_digest=request.digest,
+            evidence={
+                "integrity": dict(integrity.evidence),
+                "latency_ms": self._elapsed_ms(started_ns),
+                "stage": "REQUEST_INTEGRITY",
+            },
         )
         return GatewayOutcome(result=result, settlement=None)
 

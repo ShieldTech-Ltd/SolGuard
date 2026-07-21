@@ -31,9 +31,9 @@ This document describes the intended security model for the SolGuard hackathon p
 | Recipient is prohibited | Recipient policy | Block before signing |
 | Recipient is new but permitted | Approval threshold | Require approval |
 | Rapid high-value payments to new recipient | Compound drain rule | Block before signing |
-| Authorization is reused | Single-use nonce store | Block replay |
+| Request nonce is reused | Per-agent atomic nonce store | Block replay |
 | Request changes after approval | Canonical digest binding | Reject mismatch |
-| Mandate or request expired | Time-bound authorization | Block before signing |
+| Request is expired | Gateway-clock expiry check | Block before signing |
 | Secret appears in metadata | Sanitized observability copy | Redact from logs/UI |
 | Detection dependency fails | Fail-closed gateway | Block; do not bypass |
 | Malicious traffic attempts baseline poisoning | Clean-only baseline update | Ignore blocked traffic |
@@ -60,7 +60,19 @@ This document describes the intended security model for the SolGuard hackathon p
 
 ## Validation requirements
 
-Every invariant requires at least one automated test. The live demonstration must prove request-digest binding, replay rejection, fail-closed behaviour, and unchanged wallet balance after the attack.
+Every invariant maps to executable evidence:
+
+| Invariant | Executable test | Current boundary |
+|---|---|---|
+| No signing for a non-allowed request | `test_end_to_end_attack_never_reaches_signer_or_changes_post_baseline_balance` | Gateway and simulated settlement; wallet-side expiry enforcement remains planned |
+| Authorization binds one canonical request | `test_authorization_digest_cannot_settle_a_modified_request` | Canonical digest binding in simulated settlement |
+| Consumed nonce is not accepted twice | `test_gateway_allows_fresh_request_then_blocks_reused_nonce_before_settlement` | Per-agent, process-local request nonce store |
+| Hard policy cannot be reduced | `test_hard_recipient_block_cannot_be_reduced_by_clean_behaviour` | Gateway decision combination |
+| Blocked traffic cannot poison baseline | `test_blocked_poisoning_attempt_cannot_change_clean_baseline` | Clean-only behavioural state |
+| Security-path failure cannot allow | `test_security_dependency_failures_block_without_leaking_details` and `test_nonce_store_failure_fails_closed_without_leaking_details` | Policy, detection, settlement, and nonce-store injection |
+| Raw secrets stay out of normal events | `test_sensitive_metadata_is_absent_from_portable_audit_receipt` | Sanitized audit and dashboard representation |
+
+The live demonstration must prove request-digest binding, replay rejection, fail-closed behaviour, and unchanged wallet balance after the attack.
 
 ## Residual risk
 

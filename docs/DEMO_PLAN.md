@@ -25,8 +25,8 @@ The demonstration succeeds only if a real sandbox payment passes through SolGuar
 | First-seen permitted recipient | `REQUIRE_APPROVAL` |
 | High velocity alone | `REQUIRE_APPROVAL` |
 | First-seen recipient + abnormal amount + burst | `BLOCK` |
-| Expired mandate | `BLOCK` |
-| Reused nonce | `BLOCK` |
+| Expired request | `BLOCK` |
+| Reused request nonce | `BLOCK` |
 | Request modified after authorization | Wallet rejects authorization |
 | Sensitive metadata | Redacted from audit event |
 | Mandate store unavailable | `BLOCK` |
