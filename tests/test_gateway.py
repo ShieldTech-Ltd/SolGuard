@@ -75,6 +75,7 @@ def test_clean_payment_allows_settles_and_updates_clean_baseline() -> None:
     assert first.result.decision is Decision.ALLOW
     assert first.result.authorization is not None
     assert first.settlement is not None
+    assert isinstance(first.settlement, SimulatedSettlementResult)
     assert first.settlement.balance_before == Decimal("100")
     assert first.settlement.balance_after == Decimal("99")
     assert first.result.evidence["latency_ms"] == "1.234567"

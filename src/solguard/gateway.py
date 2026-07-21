@@ -24,10 +24,10 @@ from solguard.contracts import (
 from solguard.detection import BehaviourEngine, DetectionResult, DetectionSignal
 from solguard.integrity import IntegrityResult, RequestIntegrityGuard
 from solguard.policy import MandatePolicyEngine, PolicyResult
+from solguard.settlement import SettlementResult, SettlementUnavailable
 from solguard.simulation import (
     InsufficientSimulatedFunds,
     SimulatedSettlement,
-    SimulatedSettlementResult,
 )
 
 
@@ -56,7 +56,7 @@ class SettlementAdapter(Protocol):
 
     def settle(
         self, request: PaymentRequest, authorization: SigningAuthorization
-    ) -> SimulatedSettlementResult: ...
+    ) -> SettlementResult: ...
 
 
 @dataclass(frozen=True, slots=True)
@@ -64,7 +64,7 @@ class GatewayOutcome:
     """Gateway decision and optional successful simulated settlement."""
 
     result: DecisionResult
-    settlement: SimulatedSettlementResult | None
+    settlement: SettlementResult | None
 
 
 class PaymentGateway:
@@ -141,6 +141,15 @@ class PaymentGateway:
             authorization = self._authorization(request, observed_at=observed_at)
             try:
                 settlement_result = self._settlement.settle(request, authorization)
+            except SettlementUnavailable as exc:
+                return self._blocked_unavailable(
+                    request,
+                    failure=exc,
+                    integrity=integrity_result,
+                    policy=policy_result,
+                    detection=detection_result,
+                    started_ns=started_ns,
+                )
             except InsufficientSimulatedFunds:
                 return self._blocked_settlement(
                     request,
@@ -184,7 +193,7 @@ class PaymentGateway:
         integrity: IntegrityResult,
         policy: PolicyResult,
         detection: DetectionResult,
-        settlement: SimulatedSettlementResult | None,
+        settlement: SettlementResult | None,
         authorization: SigningAuthorization | None,
         started_ns: int,
     ) -> GatewayOutcome:
@@ -230,6 +239,38 @@ class PaymentGateway:
             request_id=request.request_id,
             decision=Decision.BLOCK,
             reason_codes=(ReasonCode.SETTLEMENT_INSUFFICIENT_FUNDS,),
+            request_digest=request.digest,
+            evidence=evidence,
+        )
+        return GatewayOutcome(result=result, settlement=None)
+
+    def _blocked_unavailable(
+        self,
+        request: PaymentRequest,
+        *,
+        failure: SettlementUnavailable,
+        integrity: IntegrityResult,
+        policy: PolicyResult,
+        detection: DetectionResult,
+        started_ns: int,
+    ) -> GatewayOutcome:
+        evidence: dict[str, object] = {
+            "detection": dict(detection.evidence),
+            "integrity": dict(integrity.evidence),
+            "latency_ms": self._elapsed_ms(started_ns),
+            "policy": dict(policy.evidence),
+            "security_decision": Decision.ALLOW.value,
+            "settlement": {
+                "failure_kind": failure.kind.value,
+                "settlement_type": failure.settlement_type,
+                "status": "UNAVAILABLE",
+            },
+            "stage": "EXTERNAL_SETTLEMENT",
+        }
+        result = DecisionResult.create(
+            request_id=request.request_id,
+            decision=Decision.BLOCK,
+            reason_codes=(ReasonCode.SETTLEMENT_UNAVAILABLE,),
             request_digest=request.digest,
             evidence=evidence,
         )

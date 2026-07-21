@@ -145,7 +145,7 @@ x402 client --------> canonical request -> SolGuard -> signing authorization
 Synthetic demo ----/
 ```
 
-The first target is one reliable sandbox integration. Additional adapters are stretch goals and must not destabilize the core demonstration.
+The Pay.sh adapter implements one optional MPP localnet sandbox path through the official Pay CLI. It converts the unsigned HTTP 402 challenge into the canonical request before gateway evaluation and invokes the external command only after `ALLOW`. x402 and additional adapters remain stretch goals and must not destabilize the simulated core demonstration.
 
 ## 8. Performance target
 
