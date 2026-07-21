@@ -25,6 +25,9 @@ claim about all attacks or real funds.
 - Compound drain: a new recipient, amount at least 2x the average, and high velocity
   together block.
 
+The 8x and 2x comparisons are inclusive: a request exactly at either applicable
+threshold triggers that rule.
+
 Hard mandate violations also block and cannot be overridden by behavioural results.
 
 ## Can an allowed decision be replayed or altered?

@@ -124,14 +124,16 @@ def test_amount_anomaly_requires_three_clean_warmup_payments() -> None:
     assert result.evidence["baseline_count"] == 2
 
 
-def test_amount_exactly_eight_times_average_does_not_block() -> None:
+def test_amount_exactly_eight_times_average_blocks() -> None:
     engine = BehaviourEngine()
     seed_clean_baseline(engine)
 
     result = engine.evaluate(request(amount="80"), observed_at=BASE_TIME)
 
-    assert result.signal is DetectionSignal.CLEAN
+    assert result.signal is DetectionSignal.BLOCK
+    assert result.reason_codes == (ReasonCode.DETECTION_AMOUNT_ANOMALY,)
     assert result.evidence["amount_multiple"] == "8"
+    assert result.evidence["triggered_rules"] == ["AMOUNT_ANOMALY"]
 
 
 def test_amount_greater_than_eight_times_average_blocks() -> None:
@@ -188,7 +190,7 @@ def test_compound_drain_blocks_new_recipient_over_two_times_average_at_velocity(
     ]
 
 
-def test_compound_drain_does_not_block_at_exactly_two_times_average() -> None:
+def test_compound_drain_blocks_at_exactly_two_times_average() -> None:
     engine = BehaviourEngine()
     seed_clean_baseline(engine)
     payment = request(recipient="new-api", amount="20")
@@ -196,8 +198,12 @@ def test_compound_drain_does_not_block_at_exactly_two_times_average() -> None:
     evaluate_attempts(engine, payment, count=4)
     result = engine.evaluate(payment, observed_at=BASE_TIME + timedelta(seconds=4))
 
-    assert result.signal is DetectionSignal.FLAG
-    assert ReasonCode.DETECTION_COMPOUND_DRAIN not in result.reason_codes
+    assert result.signal is DetectionSignal.BLOCK
+    assert result.reason_codes == (
+        ReasonCode.DETECTION_VELOCITY,
+        ReasonCode.DETECTION_RECIPIENT_NOVEL,
+        ReasonCode.DETECTION_COMPOUND_DRAIN,
+    )
 
 
 def test_amount_anomaly_and_compound_rules_report_together() -> None:
