@@ -8,6 +8,7 @@ from itertools import count
 
 import pytest
 
+from solguard.authorization import WalletAuthorizationGuard
 from solguard.contracts import AgentMandate, Decision, PaymentRequest, ReasonCode
 from solguard.detection import BehaviourEngine
 from solguard.gateway import PaymentGateway
@@ -56,7 +57,10 @@ def gateway(
     observed_at: datetime = NOW,
 ) -> tuple[PaymentGateway, SimulatedSettlement]:
     active_mandate = AgentMandate.from_dict(mandate_data())
-    settlement = SimulatedSettlement({AGENT_ID: Decimal("100")})
+    settlement = SimulatedSettlement(
+        {AGENT_ID: Decimal("100")},
+        authorization_guard=WalletAuthorizationGuard(clock=lambda: observed_at),
+    )
     ticks = count(start=1_000_000, step=1_000_000)
     instance = PaymentGateway(
         policy=MandatePolicyEngine({AGENT_ID: active_mandate}),

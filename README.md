@@ -136,7 +136,7 @@ The detailed security boundaries, attacker assumptions, and non-goals are docume
 
 **Current phase: Phase 4 external sandbox integration.**
 
-The protocol-independent contracts, simple mandate policy, four documented detection rules, fail-closed gateway, deterministic simulated settlement, metadata sanitizer, live dashboard, chained local audit receipts, adversarial security scenarios, basic request-expiry and per-agent nonce replay protection, and one real Pay.sh sandbox path are implemented and covered by automated tests. Wallet-bound single-use authorization remains planned. Features are marked implemented only after they run successfully and pass the repository verification suite.
+The protocol-independent contracts, simple mandate policy, four documented detection rules, fail-closed gateway, deterministic simulated settlement, metadata sanitizer, live dashboard, chained local audit receipts, adversarial security scenarios, basic request-expiry and per-agent nonce replay protection, single-use wallet authorization, and one real Pay.sh sandbox path are implemented and covered by automated tests. Features are marked implemented only after they run successfully and pass the repository verification suite.
 
 | Capability | Status |
 |---|---|
@@ -145,6 +145,7 @@ The protocol-independent contracts, simple mandate policy, four documented detec
 | Simple financial mandate engine | Implemented and tested |
 | Pre-signing gateway | Implemented and tested |
 | Request expiry and per-agent nonce replay protection | Implemented and tested |
+| Single-use wallet authorization | Implemented and tested on simulated and Pay.sh sandbox boundaries |
 | Four-rule behavioural detection | Implemented and tested |
 | Deterministic simulated settlement | Implemented and tested |
 | Metadata sanitizer | Implemented and tested |
@@ -217,6 +218,7 @@ This is an early product thesis, not evidence of existing customers, revenue, or
 - [Local security dashboard](docs/DASHBOARD.md)
 - [Audit receipts and local event stream](docs/AUDIT.md)
 - [Request integrity and replay protection](docs/INTEGRITY.md)
+- [Single-use wallet authorization](docs/AUTHORIZATION.md)
 - [Pay.sh sandbox integration](docs/PAYSH.md)
 - [Demo and validation plan](docs/DEMO_PLAN.md)
 - [Security policy](SECURITY.md)

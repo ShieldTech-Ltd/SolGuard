@@ -18,6 +18,7 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import urlsplit, urlunsplit
 from urllib.request import Request, urlopen
 
+from solguard.authorization import WalletAuthorizationGuard
 from solguard.contracts import (
     AgentMandate,
     ContractValidationError,
@@ -345,6 +346,7 @@ class PayShSandboxSettlement:
         timeout_seconds: float = 30.0,
         max_response_bytes: int = 1_000_000,
         runner: PayCommandRunner | None = None,
+        authorization_guard: WalletAuthorizationGuard | None = None,
     ) -> None:
         self._endpoint = validate_endpoint(endpoint)
         if not pay_executable.strip():
@@ -355,14 +357,18 @@ class PayShSandboxSettlement:
         self._timeout_seconds = timeout_seconds
         self._max_response_bytes = max_response_bytes
         self._runner = runner if runner is not None else run_pay_command
+        self._authorization_guard = (
+            authorization_guard if authorization_guard is not None else WalletAuthorizationGuard()
+        )
 
     def settle(
         self,
         request: PaymentRequest,
-        authorization: SigningAuthorization,
+        authorization: SigningAuthorization | None,
     ) -> PayShSandboxSettlementResult:
         """Perform one non-interactive ephemeral-wallet sandbox request."""
 
+        consumed_authorization = self._authorization_guard.authorize(request, authorization)
         arguments = (
             self._pay_executable,
             "--no-dna",
@@ -395,7 +401,7 @@ class PayShSandboxSettlement:
             )
         response_digest = f"sha256:{hashlib.sha256(response).hexdigest()}"
         reference_payload: dict[str, JsonValue] = {
-            "authorization_id": authorization.authorization_id,
+            "authorization_id": consumed_authorization.authorization_id,
             "endpoint": safe_endpoint(self._endpoint),
             "request_digest": request.digest,
             "response_digest": response_digest,
@@ -474,6 +480,7 @@ def attempt_sandbox_purchase(
         pay_executable=pay_executable,
         timeout_seconds=timeout_seconds,
         runner=runner,
+        authorization_guard=WalletAuthorizationGuard(clock=lambda: now),
     )
     gateway = PaymentGateway(
         policy=MandatePolicyEngine({request.agent_id: mandate}),

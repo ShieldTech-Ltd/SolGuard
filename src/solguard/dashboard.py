@@ -15,6 +15,7 @@ from typing import ClassVar, Protocol
 from urllib.parse import urlparse
 
 from solguard.audit import AuditEvent, AuditEventStream
+from solguard.authorization import WalletAuthorizationGuard
 from solguard.contracts import (
     AgentMandate,
     Decision,
@@ -185,7 +186,10 @@ class DemoRuntime:
                 "expires_at": format_timestamp(self._observed_at + timedelta(days=1)),
             }
         )
-        self._settlement = SimulatedSettlement({self.AGENT_ID: self._initial_balance})
+        self._settlement = SimulatedSettlement(
+            {self.AGENT_ID: self._initial_balance},
+            authorization_guard=WalletAuthorizationGuard(clock=lambda: self._observed_at),
+        )
         self._detection = BehaviourEngine()
         self._gateway = PaymentGateway(
             policy=MandatePolicyEngine({self.AGENT_ID: self._mandate}),

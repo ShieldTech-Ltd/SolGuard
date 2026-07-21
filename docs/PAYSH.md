@@ -41,10 +41,11 @@ uv run solguard-paysh
 3. The adapter strictly validates the MPP Solana sandbox charge, localnet, USDC mint, amount, decimals, recipient, and expiry.
 4. Those requirements become a canonical `PaymentRequest` with the challenge identifier as its nonce.
 5. The standard integrity, mandate, and behavioural gateway evaluates the request.
-6. Only `ALLOW` invokes `pay --no-dna --sandbox fetch <endpoint>`.
-7. The command emits only safe computed evidence: response length and digest, sanitized endpoint, amount, recipient, and a request-bound local settlement reference.
+6. The Pay.sh wallet boundary validates and consumes the short-lived request-bound SolGuard authorization.
+7. Only a valid, unused authorization invokes `pay --no-dna --sandbox fetch <endpoint>`.
+8. The command emits only safe computed evidence: response length and digest, sanitized endpoint, amount, recipient, and a request-bound local settlement reference.
 
-`BLOCK` and `REQUIRE_APPROVAL` never start the Pay process. Provider headers, descriptions, and responses are treated as untrusted. Query values, response bodies, CLI diagnostics, and wallet output are excluded from normal decision evidence.
+`BLOCK`, `REQUIRE_APPROVAL`, and rejected wallet authorizations never start the Pay process. Provider headers, descriptions, and responses are treated as untrusted. Query values, response bodies, CLI diagnostics, and wallet output are excluded from normal decision evidence.
 
 ## Result statuses
 

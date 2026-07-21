@@ -11,6 +11,7 @@ from typing import cast
 import pytest
 
 from solguard.audit import AuditEventStream
+from solguard.authorization import AuthorizationRejected, WalletAuthorizationGuard
 from solguard.contracts import (
     AgentMandate,
     Decision,
@@ -22,11 +23,7 @@ from solguard.detection import BehaviourEngine, DetectionResult
 from solguard.gateway import PaymentGateway
 from solguard.policy import MandatePolicyEngine, PolicyResult
 from solguard.privacy import MetadataSanitizer
-from solguard.simulation import (
-    SimulatedSettlement,
-    SimulatedSettlementError,
-    SimulatedSettlementResult,
-)
+from solguard.simulation import SimulatedSettlement, SimulatedSettlementResult
 from tests.test_contracts import mandate_data, payment_data
 
 NOW = datetime(2026, 7, 25, 10, 0, tzinfo=UTC)
@@ -79,8 +76,11 @@ def security_gateway(
 
     behaviour = engine or BehaviourEngine()
     configured_mandate = active_mandate or mandate()
-    adapter = settlement or SimulatedSettlement({AGENT_ID: Decimal("10000")})
     clock = MutableClock()
+    adapter = settlement or SimulatedSettlement(
+        {AGENT_ID: Decimal("10000")},
+        authorization_guard=WalletAuthorizationGuard(clock=clock),
+    )
     ticks = count(start=1_000_000, step=1_000_000)
     gateway = PaymentGateway(
         policy=cast(
@@ -262,7 +262,7 @@ class ExplodingSettlement(SimulatedSettlement):
     def settle(
         self,
         request: PaymentRequest,
-        authorization: SigningAuthorization,
+        authorization: SigningAuthorization | None,
     ) -> SimulatedSettlementResult:
         del request, authorization
         self._attempt_count += 1
@@ -319,9 +319,10 @@ def test_authorization_digest_cannot_settle_a_modified_request() -> None:
     balance_after_original = settlement.balances[AGENT_ID]
     modified = payment(amount="11")
 
-    with pytest.raises(SimulatedSettlementError, match="digest mismatch"):
+    with pytest.raises(AuthorizationRejected) as captured:
         settlement.settle(modified, authorization)
 
+    assert captured.value.reason_code is ReasonCode.AUTHORIZATION_MISMATCH
     assert settlement.balances[AGENT_ID] == balance_after_original
 
 

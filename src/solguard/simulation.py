@@ -8,6 +8,7 @@ from dataclasses import dataclass
 from decimal import Decimal
 from types import MappingProxyType
 
+from solguard.authorization import WalletAuthorizationGuard
 from solguard.contracts import (
     JsonValue,
     PaymentRequest,
@@ -54,12 +55,20 @@ class SimulatedSettlementResult(SettlementResult):
 class SimulatedSettlement:
     """Apply allowed payments to explicitly configured in-memory balances."""
 
-    def __init__(self, balances: Mapping[str, Decimal]) -> None:
+    def __init__(
+        self,
+        balances: Mapping[str, Decimal],
+        *,
+        authorization_guard: WalletAuthorizationGuard | None = None,
+    ) -> None:
         if any(not balance.is_finite() or balance < 0 for balance in balances.values()):
             raise ValueError("simulated balances must be finite and non-negative")
         self._balances = dict(balances)
         self._attempt_count = 0
         self._settlement_count = 0
+        self._authorization_guard = (
+            authorization_guard if authorization_guard is not None else WalletAuthorizationGuard()
+        )
 
     @property
     def attempt_count(self) -> int:
@@ -74,15 +83,14 @@ class SimulatedSettlement:
         return MappingProxyType(dict(self._balances))
 
     def settle(
-        self, request: PaymentRequest, authorization: SigningAuthorization
+        self,
+        request: PaymentRequest,
+        authorization: SigningAuthorization | None,
     ) -> SimulatedSettlementResult:
         """Settle one allowed request and return computed local evidence."""
 
+        consumed_authorization = self._authorization_guard.authorize(request, authorization)
         self._attempt_count += 1
-        if authorization.request_id != request.request_id:
-            raise SimulatedSettlementError("authorization request_id mismatch")
-        if authorization.request_digest != request.digest:
-            raise SimulatedSettlementError("authorization digest mismatch")
         if request.agent_id not in self._balances:
             raise SimulatedSettlementError("agent has no configured simulated balance")
 
@@ -93,7 +101,7 @@ class SimulatedSettlement:
         self._settlement_count += 1
         reference_payload: dict[str, JsonValue] = {
             "amount": format_amount(request.amount),
-            "authorization_id": authorization.authorization_id,
+            "authorization_id": consumed_authorization.authorization_id,
             "balance_after": format_amount(balance_after),
             "balance_before": format_amount(balance_before),
             "request_digest": request.digest,

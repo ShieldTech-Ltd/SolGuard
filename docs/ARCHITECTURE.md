@@ -69,7 +69,7 @@ No low-risk result may cancel a hard block. Each contributor returns stable reas
 
 ### 3.8 Authorize signing
 
-An `ALLOW` authorization is bound to the canonical request digest, expires quickly, and can be consumed once. A wallet integration must reject missing, expired, mismatched, or already-consumed authorizations.
+An `ALLOW` authorization is bound to the canonical request identifier and digest, expires quickly, and is atomically consumed once at both implemented settlement boundaries. Missing, expired, mismatched, or already-consumed authorizations are rejected before simulated balance mutation or Pay.sh invocation.
 
 ### 3.9 Record evidence
 
