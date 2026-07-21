@@ -28,6 +28,9 @@ classifiers = [
 ]
 dependencies = []
 
+[project.scripts]
+solguard-dashboard = "solguard.dashboard:main"
+
 [dependency-groups]
 dev = [
   "mypy>=1.17,<2",

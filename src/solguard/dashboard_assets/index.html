@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Local SolGuard pre-signing security dashboard">
+  <title>SolGuard Security Console</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <main class="shell">
+    <header class="header">
+      <div>
+        <p class="eyebrow">SOLGUARD / PAYMENT CONTROL PLANE</p>
+        <h1>Security before the signature.</h1>
+        <p class="subtitle">Every value below comes from the local gateway currently processing simulated payment traffic.</p>
+      </div>
+      <div class="runtime-label" aria-label="Settlement environment">
+        <span class="runtime-dot" aria-hidden="true"></span>
+        Simulated settlement
+      </div>
+    </header>
+
+    <section class="actions" aria-label="Demonstration controls">
+      <button type="button" data-action="normal">Run normal payment</button>
+      <button type="button" class="attack" data-action="attack">Trigger compromised agent</button>
+      <button type="button" class="secondary" data-action="reset">Reset local state</button>
+      <p id="action-status" role="status" aria-live="polite">Ready</p>
+    </section>
+
+    <section class="metrics" aria-label="Computed security metrics">
+      <article class="metric">
+        <span>Simulated wallet balance</span>
+        <strong id="wallet-balance">Loading…</strong>
+      </article>
+      <article class="metric">
+        <span>Blocked value</span>
+        <strong id="protected-value">Loading…</strong>
+      </article>
+      <article class="metric">
+        <span>Gateway decisions</span>
+        <strong id="decision-total">Loading…</strong>
+        <small id="decision-breakdown"></small>
+      </article>
+    </section>
+
+    <section class="mandate" aria-labelledby="mandate-heading">
+      <div>
+        <p class="section-label">ACTIVE FINANCIAL MANDATE</p>
+        <h2 id="mandate-heading">Loading policy…</h2>
+      </div>
+      <dl>
+        <div><dt>Maximum payment</dt><dd id="mandate-limit">—</dd></div>
+        <div><dt>Recipient mode</dt><dd id="mandate-mode">—</dd></div>
+        <div><dt>Latest latency</dt><dd id="latest-latency">No data</dd></div>
+      </dl>
+    </section>
+
+    <section class="feed" aria-labelledby="feed-heading">
+      <div class="feed-heading">
+        <div>
+          <p class="section-label">LIVE TRANSACTION FEED</p>
+          <h2 id="feed-heading">Pre-signing decisions</h2>
+        </div>
+        <div class="legend" aria-label="Decision legend">
+          <span><i class="allow" aria-hidden="true"></i>Allow</span>
+          <span><i class="approval" aria-hidden="true"></i>Approval</span>
+          <span><i class="block" aria-hidden="true"></i>Block</span>
+        </div>
+      </div>
+      <div id="event-list" class="event-list" aria-live="polite">
+        <p class="empty">Loading runtime events…</p>
+      </div>
+    </section>
+
+    <footer>
+      <span>Local demonstration environment</span>
+      <span id="footer-state">Waiting for gateway state</span>
+    </footer>
+  </main>
+</body>
+</html>

@@ -150,7 +150,7 @@ The protocol-independent contracts, simple mandate policy, four documented detec
 | Metadata sanitizer | Implemented and tested |
 | Pay.sh sandbox adapter | Planned |
 | x402 adapter | Stretch goal |
-| Live dashboard | Planned |
+| Live dashboard | Implemented and tested |
 | Recorded fallback demo | Planned |
 
 ## Development setup
@@ -173,6 +173,14 @@ uv run pytest
 ```
 
 The committed `uv.lock` is authoritative. Dependency changes must update the lock file and pass the complete verification suite.
+
+Run the local simulated security dashboard:
+
+```bash
+uv run solguard-dashboard
+```
+
+Open `http://127.0.0.1:8765`. The dashboard starts with an empty runtime state; use its normal-payment and compromised-agent controls to generate computed local events.
 
 ## Build order
 
@@ -197,6 +205,7 @@ This is an early product thesis, not evidence of existing customers, revenue, or
 - [Interactive architecture](docs/architecture.html)
 - [Threat model](docs/THREAT_MODEL.md)
 - [Metadata sanitization](docs/PRIVACY.md)
+- [Local security dashboard](docs/DASHBOARD.md)
 - [Demo and validation plan](docs/DEMO_PLAN.md)
 - [Security policy](SECURITY.md)
 - [Contribution and release workflow](CONTRIBUTING.md)
