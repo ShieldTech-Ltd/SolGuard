@@ -136,17 +136,30 @@ class DemoRuntime:
             while self._clean_seed_count < 3:
                 self._process_normal()
             self._observed_at += timedelta(seconds=11)
-            for _ in range(5):
-                self._process(
-                    recipient=self.ATTACK_RECIPIENT,
-                    amount="25",
-                    metadata={
-                        "authorization": "Bearer dashboard-demo-secret",
-                        "contact": "attacker@example.com",
-                        "scenario": "compound-drain",
-                    },
-                )
+            self._process_attack_burst()
             return self.snapshot()
+
+    def run_demo_sequence(self) -> dict[str, JsonValue]:
+        """Run baseline, attack, reset, and recovery as deterministic checkpoints."""
+
+        with self._lock:
+            self._reset_locked()
+            initial = self.snapshot()
+            while self._clean_seed_count < 3:
+                self._process_normal()
+            baseline = self.snapshot()
+            self._observed_at += timedelta(seconds=11)
+            self._process_attack_burst()
+            attack = self.snapshot()
+            self._reset_locked()
+            self._process_normal()
+            recovery = self.snapshot()
+            return {
+                "attack": attack,
+                "baseline": baseline,
+                "initial": initial,
+                "recovery": recovery,
+            }
 
     def reset(self) -> dict[str, JsonValue]:
         """Reset only local simulated state and return the computed empty snapshot."""
@@ -211,6 +224,18 @@ class DemoRuntime:
         )
         if outcome.result.decision is Decision.ALLOW:
             self._clean_seed_count += 1
+
+    def _process_attack_burst(self) -> None:
+        for _ in range(5):
+            self._process(
+                recipient=self.ATTACK_RECIPIENT,
+                amount="25",
+                metadata={
+                    "authorization": "Bearer dashboard-demo-secret",
+                    "contact": "attacker@example.com",
+                    "scenario": "compound-drain",
+                },
+            )
 
     def _process(
         self,
