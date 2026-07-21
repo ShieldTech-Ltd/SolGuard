@@ -15,6 +15,7 @@ from solguard.contracts import (
     canonical_json,
     format_amount,
 )
+from solguard.settlement import SettlementResult
 
 
 class SimulatedSettlementError(RuntimeError):
@@ -26,7 +27,7 @@ class InsufficientSimulatedFunds(SimulatedSettlementError):
 
 
 @dataclass(frozen=True, slots=True)
-class SimulatedSettlementResult:
+class SimulatedSettlementResult(SettlementResult):
     """Computed evidence from a successful local balance transfer."""
 
     settlement_reference: str
@@ -36,7 +37,7 @@ class SimulatedSettlementResult:
     balance_before: Decimal
     balance_after: Decimal
 
-    def to_dict(self) -> dict[str, str]:
+    def to_dict(self) -> dict[str, JsonValue]:
         """Return display-safe computed settlement values."""
 
         return {

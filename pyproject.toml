@@ -30,6 +30,7 @@ dependencies = []
 
 [project.scripts]
 solguard-dashboard = "solguard.dashboard:main"
+solguard-paysh = "solguard.paysh:main"
 
 [dependency-groups]
 dev = [

@@ -134,9 +134,9 @@ The detailed security boundaries, attacker assumptions, and non-goals are docume
 
 ## Project status
 
-**Current phase: Phase 3 security hardening.**
+**Current phase: Phase 4 external sandbox integration.**
 
-The protocol-independent contracts, simple mandate policy, four documented detection rules, fail-closed gateway, deterministic simulated settlement, metadata sanitizer, live dashboard, chained local audit receipts, adversarial security scenarios, and basic request-expiry and per-agent nonce replay protection are implemented and covered by automated tests. External payment adapters remain planned. Features are marked implemented only after they run successfully and pass the repository verification suite.
+The protocol-independent contracts, simple mandate policy, four documented detection rules, fail-closed gateway, deterministic simulated settlement, metadata sanitizer, live dashboard, chained local audit receipts, adversarial security scenarios, basic request-expiry and per-agent nonce replay protection, and one real Pay.sh sandbox path are implemented and covered by automated tests. Wallet-bound single-use authorization remains planned. Features are marked implemented only after they run successfully and pass the repository verification suite.
 
 | Capability | Status |
 |---|---|
@@ -148,7 +148,7 @@ The protocol-independent contracts, simple mandate policy, four documented detec
 | Four-rule behavioural detection | Implemented and tested |
 | Deterministic simulated settlement | Implemented and tested |
 | Metadata sanitizer | Implemented and tested |
-| Pay.sh sandbox adapter | Planned |
+| Pay.sh sandbox adapter | Implemented, tested, and exercised against the official sandbox |
 | x402 adapter | Stretch goal |
 | Live dashboard | Implemented and tested |
 | Audit receipts and local event stream | Implemented and tested |
@@ -183,6 +183,14 @@ uv run solguard-dashboard
 
 Open `http://127.0.0.1:8765`. The dashboard starts with an empty runtime state; use its normal-payment and compromised-agent controls to generate computed local events.
 
+After installing the official Pay CLI, attempt one external ephemeral-wallet sandbox purchase through the same gateway:
+
+```bash
+uv run solguard-paysh
+```
+
+The Pay.sh path is optional. The local simulated dashboard remains the reliable fallback when the CLI or network is unavailable.
+
 ## Build order
 
 1. Mandate schema and deterministic policy engine
@@ -209,6 +217,7 @@ This is an early product thesis, not evidence of existing customers, revenue, or
 - [Local security dashboard](docs/DASHBOARD.md)
 - [Audit receipts and local event stream](docs/AUDIT.md)
 - [Request integrity and replay protection](docs/INTEGRITY.md)
+- [Pay.sh sandbox integration](docs/PAYSH.md)
 - [Demo and validation plan](docs/DEMO_PLAN.md)
 - [Security policy](SECURITY.md)
 - [Contribution and release workflow](CONTRIBUTING.md)

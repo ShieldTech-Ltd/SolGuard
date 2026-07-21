@@ -6,6 +6,7 @@ from solguard.dashboard import DashboardStore, DemoRuntime
 from solguard.detection import BehaviourEngine, DetectionSignal
 from solguard.gateway import GatewayOutcome, PaymentGateway, build_simulated_gateway
 from solguard.integrity import InMemoryNonceStore, RequestIntegrityGuard
+from solguard.paysh import PayShChallengeProbe, PayShSandboxSettlement, attempt_sandbox_purchase
 from solguard.policy import MandatePolicyEngine
 from solguard.privacy import MetadataSanitizer, RedactionCategory, SanitizationLimits
 from solguard.simulation import SimulatedSettlement
@@ -24,6 +25,8 @@ __all__ = [
     "InMemoryNonceStore",
     "MandatePolicyEngine",
     "MetadataSanitizer",
+    "PayShChallengeProbe",
+    "PayShSandboxSettlement",
     "PaymentGateway",
     "PaymentRequest",
     "RedactionCategory",
@@ -31,6 +34,7 @@ __all__ = [
     "SanitizationLimits",
     "SimulatedSettlement",
     "__version__",
+    "attempt_sandbox_purchase",
     "build_simulated_gateway",
 ]
 
