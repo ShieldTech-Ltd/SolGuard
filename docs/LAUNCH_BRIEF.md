@@ -60,7 +60,8 @@ The current build is not production-ready. It uses process-local state and does 
 provide durable replay coordination, multi-tenant isolation, authenticated policy
 administration, hardened key custody, high availability, incident response, or an
 independent security review. Pay.sh activity is sandbox-only; the local balance and
-settlement path are simulated. x402 and additional protocols remain unimplemented.
+settlement path are simulated. The x402 v2 adapter currently proves Solana-devnet
+request mapping and pre-signing ordering only; its settlement remains simulated.
 
 SolGuard does not custody keys, replace wallet cryptography, guarantee fraud
 prevention, or claim that behavioural rules can identify every attack.

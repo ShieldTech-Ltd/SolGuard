@@ -12,6 +12,13 @@ from solguard.paysh import PayShChallengeProbe, PayShSandboxSettlement, attempt_
 from solguard.policy import MandatePolicyEngine
 from solguard.privacy import MetadataSanitizer, RedactionCategory, SanitizationLimits
 from solguard.simulation import SimulatedSettlement
+from solguard.x402 import (
+    X402DevnetSimulatedSettlement,
+    X402PaymentRequirement,
+    parse_payment_required_header,
+    parse_payment_required_response,
+    run_x402_devnet_demo,
+)
 
 __all__ = [
     "AgentMandate",
@@ -38,10 +45,15 @@ __all__ = [
     "SanitizationLimits",
     "SimulatedSettlement",
     "WalletAuthorizationGuard",
+    "X402DevnetSimulatedSettlement",
+    "X402PaymentRequirement",
     "__version__",
     "attempt_sandbox_purchase",
     "build_simulated_gateway",
+    "parse_payment_required_header",
+    "parse_payment_required_response",
     "run_demo",
+    "run_x402_devnet_demo",
 ]
 
 __version__ = "0.1.0"
