@@ -147,7 +147,7 @@ The protocol-independent contracts, simple mandate policy, four documented detec
 | Replay protection | Planned |
 | Four-rule behavioural detection | Implemented and tested |
 | Deterministic simulated settlement | Implemented and tested |
-| Metadata sanitizer | Planned |
+| Metadata sanitizer | Implemented and tested |
 | Pay.sh sandbox adapter | Planned |
 | x402 adapter | Stretch goal |
 | Live dashboard | Planned |
@@ -196,6 +196,7 @@ This is an early product thesis, not evidence of existing customers, revenue, or
 - [System architecture](docs/ARCHITECTURE.md)
 - [Interactive architecture](docs/architecture.html)
 - [Threat model](docs/THREAT_MODEL.md)
+- [Metadata sanitization](docs/PRIVACY.md)
 - [Demo and validation plan](docs/DEMO_PLAN.md)
 - [Security policy](SECURITY.md)
 - [Contribution and release workflow](CONTRIBUTING.md)

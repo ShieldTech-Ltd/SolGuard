@@ -4,6 +4,7 @@ from solguard.contracts import AgentMandate, Decision, DecisionResult, PaymentRe
 from solguard.detection import BehaviourEngine, DetectionSignal
 from solguard.gateway import GatewayOutcome, PaymentGateway, build_simulated_gateway
 from solguard.policy import MandatePolicyEngine
+from solguard.privacy import MetadataSanitizer, RedactionCategory, SanitizationLimits
 from solguard.simulation import SimulatedSettlement
 
 __all__ = [
@@ -14,8 +15,11 @@ __all__ = [
     "DetectionSignal",
     "GatewayOutcome",
     "MandatePolicyEngine",
+    "MetadataSanitizer",
     "PaymentGateway",
     "PaymentRequest",
+    "RedactionCategory",
+    "SanitizationLimits",
     "SimulatedSettlement",
     "__version__",
     "build_simulated_gateway",
