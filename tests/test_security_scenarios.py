@@ -153,11 +153,12 @@ def test_first_seen_recipient_alone_requires_approval_without_settlement() -> No
 @pytest.mark.parametrize(
     ("amount", "expected_decision", "expected_anomaly"),
     [
-        ("80", Decision.ALLOW, False),
+        ("79.99", Decision.ALLOW, False),
+        ("80", Decision.BLOCK, True),
         ("80.01", Decision.BLOCK, True),
     ],
 )
-def test_amount_anomaly_enforces_exact_greater_than_eight_times_boundary(
+def test_amount_anomaly_enforces_inclusive_eight_times_boundary(
     amount: str,
     expected_decision: Decision,
     expected_anomaly: bool,
@@ -176,11 +177,12 @@ def test_amount_anomaly_enforces_exact_greater_than_eight_times_boundary(
 @pytest.mark.parametrize(
     ("amount", "expected_decision", "expected_compound"),
     [
-        ("20", Decision.REQUIRE_APPROVAL, False),
+        ("19.99", Decision.REQUIRE_APPROVAL, False),
+        ("20", Decision.BLOCK, True),
         ("20.01", Decision.BLOCK, True),
     ],
 )
-def test_compound_drain_enforces_exact_greater_than_twice_average_boundary(
+def test_compound_drain_enforces_inclusive_twice_average_boundary(
     amount: str,
     expected_decision: Decision,
     expected_compound: bool,

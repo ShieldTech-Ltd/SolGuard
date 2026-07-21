@@ -75,13 +75,13 @@ class BehaviourEngine:
         amount_anomaly = (
             baseline_count >= self.AMOUNT_WARMUP
             and amount_multiple is not None
-            and amount_multiple > self.AMOUNT_BLOCK_MULTIPLIER
+            and amount_multiple >= self.AMOUNT_BLOCK_MULTIPLIER
         )
         drain_pattern = (
             new_recipient
             and high_velocity
             and amount_multiple is not None
-            and amount_multiple > self.DRAIN_AMOUNT_MULTIPLIER
+            and amount_multiple >= self.DRAIN_AMOUNT_MULTIPLIER
         )
 
         reasons: list[ReasonCode] = []
