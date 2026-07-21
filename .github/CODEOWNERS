@@ -1,0 +1,11 @@
+# Repository-wide ownership. This creates an explicit review owner without
+# requiring a second approver while SolGuard has a single maintainer.
+* @TFT444
+
+# Security-sensitive surfaces.
+/src/solguard/gateway/ @TFT444
+/src/solguard/mandates/ @TFT444
+/src/solguard/detection/ @TFT444
+/src/solguard/integrity/ @TFT444
+/.github/workflows/ @TFT444
+/SECURITY.md @TFT444

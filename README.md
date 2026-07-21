@@ -175,6 +175,7 @@ This is an early product thesis, not evidence of existing customers, revenue, or
 - [Threat model](docs/THREAT_MODEL.md)
 - [Demo and validation plan](docs/DEMO_PLAN.md)
 - [Security policy](SECURITY.md)
+- [Contribution and release workflow](CONTRIBUTING.md)
 
 ## Speed Build 2026
 
