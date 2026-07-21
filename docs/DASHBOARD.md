@@ -28,4 +28,4 @@ Payment metadata passes through the bounded sanitizer before appearing in the fe
 
 The browser can trigger only the three local scenario operations. It cannot edit a recipient, amount, mandate, wallet balance, or authorization. HTTP errors return generic messages rather than internal exception details.
 
-The Phase 2 dashboard uses a bounded in-memory store and polling endpoint. Formal audit receipts and the event-stream abstraction are implemented separately in Issue #10.
+The dashboard store subscribes to the bounded local audit event stream. The browser polls a computed state snapshot, while portable chained receipts remain available from the local `/api/audit` endpoint.

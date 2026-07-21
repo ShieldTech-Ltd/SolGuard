@@ -14,6 +14,7 @@ from urllib.request import Request, urlopen
 
 import pytest
 
+from solguard.audit import AuditEventStream
 from solguard.contracts import AgentMandate, JsonValue, PaymentRequest
 from solguard.dashboard import (
     DashboardRuntime,
@@ -155,8 +156,20 @@ def test_dashboard_store_validates_and_bounds_events() -> None:
     outcome = gateway.process(payment)
     sanitizer = MetadataSanitizer()
     store = DashboardStore(max_events=1)
-    store.record(payment, outcome, sanitizer.sanitize_payment(payment))
-    store.record(payment, outcome, sanitizer.sanitize_payment(payment))
+    stream = AuditEventStream(max_events=1)
+    stream.subscribe(store.ingest, replay=False)
+    stream.publish(
+        request=payment,
+        outcome=outcome,
+        mandate=mandate,
+        sanitized_metadata=sanitizer.sanitize_payment(payment),
+    )
+    stream.publish(
+        request=payment,
+        outcome=outcome,
+        mandate=mandate,
+        sanitized_metadata=sanitizer.sanitize_payment(payment),
+    )
 
     snapshot = store.snapshot(mandate=mandate, wallet_balance=Decimal("9"))
     assert cast(dict[str, int], snapshot["decision_counts"])["total"] == 1
@@ -214,6 +227,7 @@ def test_server_state_and_scenario_endpoints_return_runtime_data() -> None:
     with running_server(runtime()) as base:
         status, initial, _ = get(f"{base}/api/state")
         normal_status, normal = post(f"{base}/api/demo/normal")
+        audit_status, audit_body, _ = get(f"{base}/api/audit")
         attack_status, attack = post(f"{base}/api/demo/attack")
         reset_status, reset = post(f"{base}/api/demo/reset")
 
@@ -221,6 +235,11 @@ def test_server_state_and_scenario_endpoints_return_runtime_data() -> None:
     assert json.loads(initial)["decision_counts"]["total"] == 0
     assert normal_status == attack_status == reset_status == 200
     assert cast(dict[str, int], normal["decision_counts"])["total"] == 1
+    audit = json.loads(audit_body)
+    assert audit_status == 200
+    assert audit["retained"] == 1
+    assert audit["valid_chain"] is True
+    assert audit["events"][0]["receipt_digest"].startswith("sha256:")
     assert cast(dict[str, int], attack["decision_counts"])["blocked"] == 1
     assert cast(dict[str, int], reset["decision_counts"])["total"] == 0
 
@@ -248,6 +267,9 @@ class BrokenRuntime:
 
     def reset(self) -> dict[str, JsonValue]:
         return {}
+
+    def audit_receipts(self) -> dict[str, JsonValue]:
+        return {"events": [], "retained": 0, "valid_chain": True}
 
 
 def test_server_scenario_failure_is_generic() -> None:

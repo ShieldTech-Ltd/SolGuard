@@ -1,5 +1,6 @@
 """SolGuard pre-signing security gateway."""
 
+from solguard.audit import AuditEvent, AuditEventStream
 from solguard.contracts import AgentMandate, Decision, DecisionResult, PaymentRequest
 from solguard.dashboard import DashboardStore, DemoRuntime
 from solguard.detection import BehaviourEngine, DetectionSignal
@@ -10,6 +11,8 @@ from solguard.simulation import SimulatedSettlement
 
 __all__ = [
     "AgentMandate",
+    "AuditEvent",
+    "AuditEventStream",
     "BehaviourEngine",
     "DashboardStore",
     "Decision",

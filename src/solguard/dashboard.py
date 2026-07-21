@@ -6,7 +6,6 @@ import argparse
 import json
 import threading
 from collections.abc import Callable, Mapping, Sequence
-from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 from http import HTTPStatus
@@ -15,6 +14,7 @@ from importlib import resources
 from typing import ClassVar, Protocol
 from urllib.parse import urlparse
 
+from solguard.audit import AuditEvent, AuditEventStream
 from solguard.contracts import (
     AgentMandate,
     Decision,
@@ -26,47 +26,8 @@ from solguard.contracts import (
 from solguard.detection import BehaviourEngine
 from solguard.gateway import GatewayOutcome, PaymentGateway
 from solguard.policy import MandatePolicyEngine
-from solguard.privacy import MetadataSanitizer, SanitizedMetadata
+from solguard.privacy import MetadataSanitizer
 from solguard.simulation import SimulatedSettlement
-
-
-@dataclass(frozen=True, slots=True)
-class DashboardEvent:
-    """One runtime-derived row displayed in the transaction feed."""
-
-    sequence: int
-    observed_at: datetime
-    request_id: str
-    agent_id: str
-    recipient: str
-    amount: Decimal
-    asset: str
-    decision: Decision
-    reason_codes: tuple[str, ...]
-    latency_ms: str
-    signing_state: str
-    settlement_reference: str | None
-    sanitized_metadata: SanitizedMetadata
-
-    def to_dict(self) -> dict[str, JsonValue]:
-        """Return a display-safe event object."""
-
-        return {
-            "agent_id": self.agent_id,
-            "amount": format_amount(self.amount),
-            "asset": self.asset,
-            "decision": self.decision.value,
-            "latency_ms": self.latency_ms,
-            "observed_at": format_timestamp(self.observed_at),
-            "reason_codes": list(self.reason_codes),
-            "recipient": self.recipient,
-            "request_id": self.request_id,
-            "sanitized_metadata": self.sanitized_metadata.to_dict(),
-            "sequence": self.sequence,
-            "settlement_reference": self.settlement_reference,
-            "signing_state": self.signing_state,
-            "traffic_type": "SIMULATED",
-        }
 
 
 class DashboardStore:
@@ -76,40 +37,14 @@ class DashboardStore:
         if max_events < 1:
             raise ValueError("max_events must be positive")
         self._max_events = max_events
-        self._events: list[DashboardEvent] = []
-        self._sequence = 0
+        self._events: list[AuditEvent] = []
 
-    def record(
-        self,
-        request: PaymentRequest,
-        outcome: GatewayOutcome,
-        sanitized_metadata: SanitizedMetadata,
-    ) -> DashboardEvent:
-        """Create one event exclusively from a real gateway outcome."""
+    def ingest(self, event: AuditEvent) -> None:
+        """Consume one formal event from the local audit stream."""
 
-        self._sequence += 1
-        settlement_reference = (
-            outcome.settlement.settlement_reference if outcome.settlement is not None else None
-        )
-        event = DashboardEvent(
-            sequence=self._sequence,
-            observed_at=request.created_at,
-            request_id=request.request_id,
-            agent_id=request.agent_id,
-            recipient=request.recipient,
-            amount=request.amount,
-            asset=request.asset,
-            decision=outcome.result.decision,
-            reason_codes=tuple(reason.value for reason in outcome.result.reason_codes),
-            latency_ms=str(outcome.result.evidence["latency_ms"]),
-            signing_state=("SIGNED_SIMULATED" if outcome.settlement is not None else "NOT_SIGNED"),
-            settlement_reference=settlement_reference,
-            sanitized_metadata=sanitized_metadata,
-        )
         self._events.append(event)
         if len(self._events) > self._max_events:
             self._events = self._events[-self._max_events :]
-        return event
 
     def snapshot(
         self,
@@ -144,7 +79,7 @@ class DashboardStore:
                 "require_approval": approval,
                 "total": len(self._events),
             },
-            "events": [event.to_dict() for event in reversed(self._events)],
+            "events": [event.dashboard_dict() for event in reversed(self._events)],
             "latest_latency_ms": latest_latency,
             "settlement_type": "SIMULATED",
             "value_protected": format_amount(protected_value),
@@ -219,6 +154,17 @@ class DemoRuntime:
             self._reset_locked()
             return self.snapshot()
 
+    def audit_receipts(self) -> dict[str, JsonValue]:
+        """Return retained portable receipts for local inspection and reconnect."""
+
+        with self._lock:
+            events = self._audit_stream.snapshot()
+            return {
+                "events": [event.to_dict() for event in events],
+                "retained": len(events),
+                "valid_chain": AuditEventStream.verify_chain(events),
+            }
+
     def _reset_locked(self) -> None:
         start = self._configured_start_time or datetime.now(UTC)
         if start.tzinfo is None or start.utcoffset() is None:
@@ -250,6 +196,8 @@ class DemoRuntime:
         )
         self._sanitizer = MetadataSanitizer()
         self._store = DashboardStore(max_events=self._max_events)
+        self._audit_stream = AuditEventStream(max_events=self._max_events)
+        self._audit_stream.subscribe(self._store.ingest, replay=False)
 
     def _process_normal(self) -> None:
         outcome = self._process(
@@ -285,7 +233,12 @@ class DemoRuntime:
         )
         outcome = self._gateway.process(request)
         sanitized = self._sanitizer.sanitize_payment(request)
-        self._store.record(request, outcome, sanitized)
+        self._audit_stream.publish(
+            request=request,
+            outcome=outcome,
+            mandate=self._mandate,
+            sanitized_metadata=sanitized,
+        )
         self._observed_at += timedelta(seconds=1)
         return outcome
 
@@ -300,6 +253,8 @@ class DashboardRuntime(Protocol):
     def run_attack(self) -> dict[str, JsonValue]: ...
 
     def reset(self) -> dict[str, JsonValue]: ...
+
+    def audit_receipts(self) -> dict[str, JsonValue]: ...
 
 
 class DashboardServer(ThreadingHTTPServer):
@@ -330,6 +285,9 @@ class DashboardRequestHandler(BaseHTTPRequestHandler):
         path = urlparse(self.path).path
         if path == "/api/state":
             self._send_json(self.server.runtime.snapshot())
+            return
+        if path == "/api/audit":
+            self._send_json(self.server.runtime.audit_receipts())
             return
         asset = self._ASSETS.get(path)
         if asset is None:

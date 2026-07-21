@@ -69,6 +69,7 @@ function eventRow(event) {
   reason.className = "event-reason";
   reason.append(textElement("strong", formatReasons(event)));
   reason.append(textElement("small", redactionSummary(event)));
+  reason.append(textElement("small", `Receipt ${event.receipt_digest.slice(0, 22)}…`));
 
   row.append(primary, recipient, money, reason);
   return row;
