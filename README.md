@@ -134,9 +134,9 @@ The detailed security boundaries, attacker assumptions, and non-goals are docume
 
 ## Project status
 
-**Current phase: Phase 1 core implementation.**
+**Current phase: Phase 2 observability implementation.**
 
-The protocol-independent contracts, simple mandate policy, four documented detection rules, fail-closed gateway, and deterministic simulated settlement are implemented and covered by automated tests. External payment adapters and the live dashboard remain planned. Features are marked implemented only after they run successfully and pass the repository verification suite.
+The protocol-independent contracts, simple mandate policy, four documented detection rules, fail-closed gateway, deterministic simulated settlement, metadata sanitizer, live dashboard, and chained local audit receipts are implemented and covered by automated tests. External payment adapters remain planned. Features are marked implemented only after they run successfully and pass the repository verification suite.
 
 | Capability | Status |
 |---|---|
@@ -147,10 +147,11 @@ The protocol-independent contracts, simple mandate policy, four documented detec
 | Replay protection | Planned |
 | Four-rule behavioural detection | Implemented and tested |
 | Deterministic simulated settlement | Implemented and tested |
-| Metadata sanitizer | Planned |
+| Metadata sanitizer | Implemented and tested |
 | Pay.sh sandbox adapter | Planned |
 | x402 adapter | Stretch goal |
-| Live dashboard | Planned |
+| Live dashboard | Implemented and tested |
+| Audit receipts and local event stream | Implemented and tested |
 | Recorded fallback demo | Planned |
 
 ## Development setup
@@ -174,6 +175,14 @@ uv run pytest
 
 The committed `uv.lock` is authoritative. Dependency changes must update the lock file and pass the complete verification suite.
 
+Run the local simulated security dashboard:
+
+```bash
+uv run solguard-dashboard
+```
+
+Open `http://127.0.0.1:8765`. The dashboard starts with an empty runtime state; use its normal-payment and compromised-agent controls to generate computed local events.
+
 ## Build order
 
 1. Mandate schema and deterministic policy engine
@@ -196,6 +205,9 @@ This is an early product thesis, not evidence of existing customers, revenue, or
 - [System architecture](docs/ARCHITECTURE.md)
 - [Interactive architecture](docs/architecture.html)
 - [Threat model](docs/THREAT_MODEL.md)
+- [Metadata sanitization](docs/PRIVACY.md)
+- [Local security dashboard](docs/DASHBOARD.md)
+- [Audit receipts and local event stream](docs/AUDIT.md)
 - [Demo and validation plan](docs/DEMO_PLAN.md)
 - [Security policy](SECURITY.md)
 - [Contribution and release workflow](CONTRIBUTING.md)
