@@ -134,9 +134,9 @@ The detailed security boundaries, attacker assumptions, and non-goals are docume
 
 ## Project status
 
-**Current phase: Phase 2 observability implementation.**
+**Current phase: Phase 3 security hardening.**
 
-The protocol-independent contracts, simple mandate policy, four documented detection rules, fail-closed gateway, deterministic simulated settlement, metadata sanitizer, live dashboard, and chained local audit receipts are implemented and covered by automated tests. External payment adapters remain planned. Features are marked implemented only after they run successfully and pass the repository verification suite.
+The protocol-independent contracts, simple mandate policy, four documented detection rules, fail-closed gateway, deterministic simulated settlement, metadata sanitizer, live dashboard, chained local audit receipts, adversarial security scenarios, and basic request-expiry and per-agent nonce replay protection are implemented and covered by automated tests. External payment adapters remain planned. Features are marked implemented only after they run successfully and pass the repository verification suite.
 
 | Capability | Status |
 |---|---|
@@ -144,7 +144,7 @@ The protocol-independent contracts, simple mandate policy, four documented detec
 | Canonical payment contracts | Implemented and tested |
 | Simple financial mandate engine | Implemented and tested |
 | Pre-signing gateway | Implemented and tested |
-| Replay protection | Planned |
+| Request expiry and per-agent nonce replay protection | Implemented and tested |
 | Four-rule behavioural detection | Implemented and tested |
 | Deterministic simulated settlement | Implemented and tested |
 | Metadata sanitizer | Implemented and tested |
@@ -208,6 +208,7 @@ This is an early product thesis, not evidence of existing customers, revenue, or
 - [Metadata sanitization](docs/PRIVACY.md)
 - [Local security dashboard](docs/DASHBOARD.md)
 - [Audit receipts and local event stream](docs/AUDIT.md)
+- [Request integrity and replay protection](docs/INTEGRITY.md)
 - [Demo and validation plan](docs/DEMO_PLAN.md)
 - [Security policy](SECURITY.md)
 - [Contribution and release workflow](CONTRIBUTING.md)
