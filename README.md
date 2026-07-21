@@ -151,6 +151,27 @@ The architecture and demonstration requirements are documented. The payment engi
 | Live dashboard | Planned |
 | Recorded fallback demo | Planned |
 
+## Development setup
+
+SolGuard requires Python 3.11–3.13 and uses [uv](https://docs.astral.sh/uv/) for locked dependency management.
+
+Install all development dependencies from a fresh clone:
+
+```bash
+uv sync --locked --all-groups
+```
+
+Run the same verification commands enforced by continuous integration:
+
+```bash
+uv run ruff check .
+uv run ruff format --check .
+uv run mypy
+uv run pytest
+```
+
+The committed `uv.lock` is authoritative. Dependency changes must update the lock file and pass the complete verification suite.
+
 ## Build order
 
 1. Mandate schema and deterministic policy engine
