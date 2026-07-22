@@ -21,6 +21,7 @@ from solguard.dashboard import (
     DashboardStore,
     DemoRuntime,
     create_dashboard_server,
+    create_seeded_demo_runtime,
 )
 from solguard.gateway import build_simulated_gateway
 from solguard.privacy import MetadataSanitizer
@@ -72,6 +73,21 @@ def test_normal_action_uses_real_gateway_and_settlement_result() -> None:
     assert event["signing_state"] == "SIGNED_SIMULATED"
     assert str(event["settlement_reference"]).startswith("simulated:sha256:")
     assert event["traffic_type"] == "SIMULATED"
+
+
+def test_stage_runtime_opens_with_one_computed_normal_payment() -> None:
+    snapshot = create_seeded_demo_runtime().snapshot()
+
+    assert snapshot["decision_counts"] == {
+        "allowed": 1,
+        "blocked": 0,
+        "require_approval": 0,
+        "total": 1,
+    }
+    assert snapshot["wallet_balance"] == "990"
+    event = cast(list[dict[str, JsonValue]], snapshot["events"])[0]
+    assert event["decision"] == "ALLOW"
+    assert event["signing_state"] == "SIGNED_SIMULATED"
 
 
 def test_attack_action_seeds_baseline_then_blocks_compound_drain() -> None:

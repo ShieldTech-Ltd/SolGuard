@@ -272,6 +272,14 @@ class DemoRuntime:
         return outcome
 
 
+def create_seeded_demo_runtime() -> DemoRuntime:
+    """Open the stage dashboard with one genuine gateway-processed payment."""
+
+    runtime = DemoRuntime()
+    runtime.run_normal()
+    return runtime
+
+
 class DashboardRuntime(Protocol):
     """Operations exposed to the local HTTP handler."""
 
@@ -400,7 +408,7 @@ def main(argv: Sequence[str] | None = None) -> int:  # pragma: no cover - manual
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", default=8765, type=int)
     args = parser.parse_args(argv)
-    server = create_dashboard_server(DemoRuntime(), host=args.host, port=args.port)
+    server = create_dashboard_server(create_seeded_demo_runtime(), host=args.host, port=args.port)
     print(f"SolGuard dashboard: http://{args.host}:{args.port}")
     try:
         server.serve_forever()

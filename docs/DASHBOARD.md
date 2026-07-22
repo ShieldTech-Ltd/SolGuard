@@ -1,7 +1,7 @@
 # Live Security Dashboard
 
 The SolGuard dashboard is a stage-facing local demonstration interface backed by the
-running gateway. It does not contain sample transactions, hardcoded activity totals,
+running gateway. It does not contain hardcoded transaction results, activity totals,
 invented trust scores, or claimed network settlement.
 
 ## Run
@@ -11,6 +11,11 @@ uv run solguard-dashboard
 ```
 
 Open `http://127.0.0.1:8765`.
+
+The command processes one normal payment through the gateway before opening the server,
+so the first screen contains computed `ALLOW`, authorization, settlement, receipt, and
+balance evidence. **Reset local state** still returns the runtime to a genuine empty
+state.
 
 ## Controls
 
