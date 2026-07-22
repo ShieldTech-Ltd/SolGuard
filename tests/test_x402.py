@@ -93,6 +93,30 @@ def payment_request(
     )
 
 
+def test_payment_request_can_bind_an_explicit_live_devnet_mode() -> None:
+    parsed = requirement()
+
+    request = parsed.to_payment_request(
+        agent_id="x402-agent",
+        mandate_id="x402-mandate",
+        attempt_id="live-attempt",
+        observed_at=NOW,
+        settlement_mode="LIVE_DEVNET",
+    )
+
+    assert request.metadata["settlement_mode"] == "LIVE_DEVNET"
+    assert parsed.matches(request, settlement_mode="LIVE_DEVNET") is True
+    assert parsed.matches(request) is False
+    with pytest.raises(X402ProtocolError, match="settlement_mode"):
+        parsed.to_payment_request(
+            agent_id="x402-agent",
+            mandate_id="x402-mandate",
+            attempt_id="invalid-mode",
+            observed_at=NOW,
+            settlement_mode="MAINNET",
+        )
+
+
 def signature_header(
     parsed: X402PaymentRequirement,
     request: PaymentRequest,

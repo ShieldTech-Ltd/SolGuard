@@ -78,12 +78,15 @@ class X402PaymentRequirement:
         mandate_id: str,
         attempt_id: str,
         observed_at: datetime,
+        settlement_mode: str = "SIMULATED_DEVNET",
     ) -> PaymentRequest:
         """Bind a payment attempt and the complete x402 requirement to SolGuard."""
 
         if observed_at.tzinfo is None or observed_at.utcoffset() is None:
             raise X402ProtocolError("observed_at must include a timezone")
         validated_attempt = _bounded_text(attempt_id, field_name="attempt_id", maximum=128)
+        if settlement_mode not in {"LIVE_DEVNET", "SIMULATED_DEVNET"}:
+            raise X402ProtocolError("settlement_mode is unsupported")
         binding: JsonObject = {
             "attempt_id": validated_attempt,
             "payment_required_digest": self.payment_required_digest,
@@ -96,7 +99,7 @@ class X402PaymentRequirement:
             "payment_required_digest": self.payment_required_digest,
             "resource_url": safe_resource_url(self.resource_url),
             "scheme": "exact",
-            "settlement_mode": "SIMULATED_DEVNET",
+            "settlement_mode": settlement_mode,
             "x402_version": X402_VERSION,
         }
         try:
@@ -120,7 +123,9 @@ class X402PaymentRequirement:
         except ContractValidationError as exc:
             raise X402ProtocolError("x402 requirement cannot form a canonical request") from exc
 
-    def matches(self, request: PaymentRequest) -> bool:
+    def matches(
+        self, request: PaymentRequest, *, settlement_mode: str = "SIMULATED_DEVNET"
+    ) -> bool:
         """Return whether a canonical request is bound to this exact requirement."""
 
         expected_metadata: JsonObject = {
@@ -130,7 +135,7 @@ class X402PaymentRequirement:
             "payment_required_digest": self.payment_required_digest,
             "resource_url": safe_resource_url(self.resource_url),
             "scheme": "exact",
-            "settlement_mode": "SIMULATED_DEVNET",
+            "settlement_mode": settlement_mode,
             "x402_version": X402_VERSION,
         }
         return (
