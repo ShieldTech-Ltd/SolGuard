@@ -203,6 +203,10 @@ and settlement references are computed during the run and explicitly labelled
 [autonomous security runner guide](docs/AUTONOMOUS_RUNNER.md) for the exact scenario and trust
 boundary.
 
+The [isolated wallet signer guide](docs/WALLET_SIGNER.md) documents the separate SolGuard
+authorization signature, transaction-field binding, atomic single-use enforcement, and disposable
+devnet key boundary.
+
 Open `http://127.0.0.1:8765`. Select **Start guided demo** for an eight-step,
 judge-facing walkthrough of a payment intent, canonical request, integrity check,
 financial mandate, behavioural analysis, authorization, wallet outcome, and hash-linked
