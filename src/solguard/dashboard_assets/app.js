@@ -12,14 +12,17 @@ const elements = {
   eventList: document.getElementById("event-list"),
   footerState: document.getElementById("footer-state"),
   mandateHeading: document.getElementById("mandate-heading"),
+  mandateBlocked: document.getElementById("mandate-blocked"),
   mandateLimit: document.getElementById("mandate-limit"),
   mandateMode: document.getElementById("mandate-mode"),
+  mandatePurpose: document.getElementById("mandate-purpose"),
   privacyDetail: document.getElementById("privacy-detail"),
   privacyState: document.getElementById("privacy-state"),
   protectedValue: document.getElementById("protected-value"),
   reasonList: document.getElementById("reason-list"),
   receiptDetail: document.getElementById("receipt-detail"),
   receiptState: document.getElementById("receipt-state"),
+  scenarioName: document.getElementById("scenario-name"),
   settlementDetail: document.getElementById("settlement-detail"),
   settlementState: document.getElementById("settlement-state"),
   signerDetail: document.getElementById("signer-detail"),
@@ -28,6 +31,21 @@ const elements = {
 };
 
 const buttons = Array.from(document.querySelectorAll("button[data-action]"));
+const scenarioButtons = Array.from(document.querySelectorAll("button[data-scenario]"));
+const pipelineSteps = Object.fromEntries(
+  Array.from(document.querySelectorAll("[data-pipeline]")).map((element) => [
+    element.dataset.pipeline,
+    element,
+  ]),
+);
+
+const scenarioLabels = {
+  COMPOUND_DRAIN: "SCENARIO 04 · COMPOUND WALLET DRAIN",
+  NEW_RECIPIENT: "SCENARIO 02 · FIRST-SEEN RECIPIENT",
+  NORMAL_PAYMENT: "SCENARIO 01 · NORMAL API PURCHASE",
+  READY: "LIVE SCENARIO",
+  REPLAY_ATTACK: "SCENARIO 03 · REPLAYED REQUEST",
+};
 
 const reasonLabels = {
   DETECTION_AMOUNT_ANOMALY: "AMOUNT AT LEAST 8× BASELINE",
@@ -94,6 +112,55 @@ function formatObservedAt(value) {
   })} UTC`;
 }
 
+function setPipelineState(name, status, detail) {
+  const step = pipelineSteps[name];
+  step.className = `pipeline-step ${status}`;
+  step.querySelector("small").textContent = detail;
+}
+
+function renderPipeline(event) {
+  for (const name of Object.keys(pipelineSteps)) setPipelineState(name, "idle", "Waiting");
+  if (!event) return;
+
+  const reasons = new Set(event.reason_codes);
+  const integrityBlocked = ["REQUEST_INVALID", "REQUEST_EXPIRED", "REQUEST_REPLAYED"]
+    .some((reason) => reasons.has(reason));
+  const policyBlocked = Array.from(reasons).some((reason) => reason.startsWith("POLICY_"));
+  const detectionReasons = Array.from(reasons).filter((reason) => reason.startsWith("DETECTION_"));
+
+  setPipelineState("normalize", "pass", "CANONICALIZED");
+  if (integrityBlocked) {
+    setPipelineState("integrity", "block", humanReason(event.reason_codes[0]));
+    setPipelineState("mandate", "skipped", "NOT EVALUATED");
+    setPipelineState("behaviour", "skipped", "NOT EVALUATED");
+  } else {
+    setPipelineState("integrity", "pass", "FRESH NONCE");
+    setPipelineState("mandate", policyBlocked ? "block" : "pass", policyBlocked ? "HARD BLOCK" : "WITHIN MANDATE");
+    if (detectionReasons.length === 0) {
+      setPipelineState("behaviour", "pass", "CLEAN");
+    } else if (event.decision === "REQUIRE_APPROVAL") {
+      setPipelineState("behaviour", "warn", "FLAGGED");
+    } else {
+      setPipelineState("behaviour", "block", "BLOCK SIGNAL");
+    }
+  }
+
+  if (event.decision === "ALLOW") {
+    setPipelineState("authorization", "pass", "ISSUED + CONSUMED");
+    setPipelineState("wallet", "pass", "SIGNED · SIMULATED");
+  } else {
+    setPipelineState("authorization", "withheld", "WITHHELD");
+    setPipelineState("wallet", "withheld", "NOT CALLED");
+  }
+}
+
+function renderScenario(state) {
+  elements.scenarioName.textContent = scenarioLabels[state.active_scenario] || state.active_scenario.replaceAll("_", " ");
+  for (const button of scenarioButtons) {
+    button.classList.toggle("active", button.dataset.scenario === state.active_scenario);
+  }
+}
+
 function eventRow(event) {
   const stateClass = decisionClass(event.decision);
   const row = document.createElement("article");
@@ -141,6 +208,7 @@ function renderReasonChips(event) {
 
 function renderDecisionSpotlight(state) {
   const event = state.events[0];
+  renderPipeline(event);
   if (!event) {
     document.body.dataset.decision = "idle";
     elements.decisionValue.textContent = "STANDBY";
@@ -213,9 +281,14 @@ function renderState(state) {
   elements.decisionTotal.textContent = String(counts.total);
   elements.decisionBreakdown.textContent = `${counts.allowed} allowed · ${counts.require_approval} approval · ${counts.blocked} blocked`;
   elements.mandateHeading.textContent = `${mandate.agent_id} · ${mandate.asset}`;
+  elements.mandatePurpose.textContent = mandate.purpose;
   elements.mandateLimit.textContent = `${mandate.max_single_payment} ${mandate.asset}`;
   elements.mandateMode.textContent = mandate.policy_mode.replaceAll("_", " ");
+  elements.mandateBlocked.textContent = mandate.blocked_recipients.length
+    ? mandate.blocked_recipients.join(" · ")
+    : "None";
   elements.footerState.textContent = `${counts.total} computed runtime event${counts.total === 1 ? "" : "s"}`;
+  renderScenario(state);
   renderDecisionSpotlight(state);
 
   elements.eventList.replaceChildren();
@@ -235,9 +308,14 @@ async function loadState() {
 async function runAction(action) {
   buttons.forEach((button) => { button.disabled = true; });
   elements.actionStatus.classList.remove("error");
-  elements.actionStatus.textContent = action === "attack"
-    ? "Compromised agent is attempting a drain…"
-    : action === "reset" ? "Resetting local runtime…" : "Evaluating normal payment…";
+  const actionMessages = {
+    approval: "Evaluating a first-seen recipient…",
+    attack: "Compromised agent is attempting a drain…",
+    normal: "Evaluating a normal API purchase…",
+    replay: "Submitting the same request and nonce twice…",
+    reset: "Resetting local runtime…",
+  };
+  elements.actionStatus.textContent = actionMessages[action] || "Evaluating payment…";
   try {
     const response = await fetch(`/api/demo/${action}`, { method: "POST" });
     if (!response.ok) throw new Error("Scenario failed safely");
@@ -245,10 +323,14 @@ async function runAction(action) {
     renderState(state);
     if (action === "reset") {
       elements.actionStatus.textContent = "Runtime reset · ready";
+    } else if (action === "replay") {
+      elements.actionStatus.textContent = "Duplicate nonce rejected before policy and signing";
+    } else if (action === "approval") {
+      elements.actionStatus.textContent = "First-seen recipient paused for explicit approval";
     } else if (state.events[0]?.decision === "BLOCK") {
       elements.actionStatus.textContent = "Drain stopped before signing";
     } else {
-      elements.actionStatus.textContent = "Payment evaluated by the live gateway";
+      elements.actionStatus.textContent = "Normal payment allowed through the simulated boundary";
     }
   } catch (error) {
     elements.actionStatus.classList.add("error");

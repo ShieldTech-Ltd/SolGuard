@@ -19,11 +19,33 @@ state.
 
 ## Controls
 
-- **Run normal payment** submits one local simulated payment through the mandate, detection, gateway, and settlement path.
-- **Trigger compromised agent** establishes a clean three-payment baseline and then submits five new-recipient drain attempts. The fifth attempt satisfies the documented compound rule.
+- **Normal API purchase** resets the runtime and submits one known-recipient payment that
+  satisfies the mandate and reaches simulated settlement.
+- **First-seen recipient** establishes a three-payment clean baseline, then submits a
+  permitted payment to a new destination. Recipient novelty produces
+  `REQUIRE_APPROVAL`, with no authorization or settlement.
+- **Replay intercepted request** submits the exact same canonical request and nonce
+  twice. The first request is allowed; the second is blocked by the integrity guard
+  before policy, behaviour, authorization, or settlement.
+- **Compromised wallet drain** establishes a clean three-payment baseline and then
+  submits five new-recipient drain attempts. The fifth attempt satisfies the documented
+  compound rule and returns `BLOCK`.
 - **Reset local state** constructs a new in-memory gateway, detector, balance, and event store.
 
 All traffic is explicitly labelled `SIMULATED`.
+
+## Product structure
+
+The page is organized so a non-code reviewer can understand the product without opening
+the repository:
+
+1. the agent-to-gateway-to-wallet product position;
+2. four clickable decision scenarios covering all three public outcomes;
+3. the latest request and wallet-enforcement proof;
+4. the active financial mandate;
+5. a six-stage security pipeline highlighted from the latest decision;
+6. the six implemented security capabilities; and
+7. the runtime evidence stream.
 
 ## Visual proof
 
