@@ -340,6 +340,34 @@ class SigningAuthorization:
     issued_at: datetime
     expires_at: datetime
 
+    @classmethod
+    def from_dict(cls, data: Mapping[str, object]) -> SigningAuthorization:
+        """Validate a serialized wallet authorization returned by the decision API."""
+
+        expected = {
+            "authorization_id",
+            "request_id",
+            "request_digest",
+            "issued_at",
+            "expires_at",
+        }
+        _validate_fields(data, expected)
+        issued_at = parse_timestamp(data["issued_at"], field_name="issued_at")
+        expires_at = parse_timestamp(data["expires_at"], field_name="expires_at")
+        if expires_at <= issued_at:
+            raise ContractValidationError("authorization expires_at must be later than issued_at")
+        return cls(
+            authorization_id=_validate_text(
+                data["authorization_id"], field_name="authorization_id"
+            ),
+            request_id=_validate_text(data["request_id"], field_name="request_id"),
+            request_digest=_validate_text(
+                data["request_digest"], field_name="request_digest", maximum=128
+            ),
+            issued_at=issued_at,
+            expires_at=expires_at,
+        )
+
     def to_dict(self) -> JsonObject:
         """Return a stable JSON representation of the authorization."""
 
