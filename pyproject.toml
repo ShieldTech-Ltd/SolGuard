@@ -26,9 +26,12 @@ classifiers = [
   "Programming Language :: Python :: 3.13",
   "Typing :: Typed",
 ]
-dependencies = []
+dependencies = [
+    "cryptography>=44,<48",
+]
 
 [project.scripts]
+solguard-api = "solguard.autonomous_api:main"
 solguard-dashboard = "solguard.dashboard:main"
 solguard-demo = "solguard.demo:main"
 solguard-paysh = "solguard.paysh:main"

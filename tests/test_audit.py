@@ -90,6 +90,29 @@ def test_publish_creates_complete_sanitized_receipt() -> None:
     assert stream.verify_receipt(event)
 
 
+def test_publish_accepts_explicit_autonomous_intent_states() -> None:
+    stream = AuditEventStream()
+    payment = request()
+    gateway = build_simulated_gateway(
+        mandates={payment.agent_id: mandate()},
+        balances={payment.agent_id: Decimal("100")},
+        clock=lambda: NOW,
+    )
+
+    event = stream.publish(
+        request=payment,
+        outcome=gateway.evaluate(payment),
+        mandate=mandate(),
+        sanitized_metadata=MetadataSanitizer().sanitize_payment(payment),
+        signing_state="AUTHORIZED_NOT_SIGNED",
+        traffic_type="AUTONOMOUS_INTENT",
+    )
+
+    assert event.payload["signing_state"] == "AUTHORIZED_NOT_SIGNED"
+    assert event.payload["traffic_type"] == "AUTONOMOUS_INTENT"
+    assert event.payload["settlement_reference"] is None
+
+
 def test_dashboard_dict_contains_safe_runtime_fields() -> None:
     event = publish(AuditEventStream())
 

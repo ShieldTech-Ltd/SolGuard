@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterator
+from collections.abc import Iterator, Mapping
 from datetime import UTC, datetime
 from decimal import Decimal
 from typing import cast
@@ -13,6 +13,7 @@ from solguard.authorization import WalletAuthorizationGuard
 from solguard.contracts import (
     AgentMandate,
     Decision,
+    JsonValue,
     PaymentRequest,
     ReasonCode,
     SigningAuthorization,
@@ -94,6 +95,21 @@ def test_clean_payment_allows_settles_and_updates_clean_baseline() -> None:
         "velocity_window_seconds": 10,
     }
     assert adapter.attempt_count == 2
+
+
+def test_evaluation_authorizes_without_settlement_or_baseline_update() -> None:
+    instance, adapter = gateway(timer_values=(1_000_000, 2_000_000, 3_000_000, 4_000_000))
+
+    evaluated = instance.evaluate(request(amount="1"))
+    processed = instance.process(request(request_id="req_02", nonce="nonce-02", amount="1"))
+
+    assert evaluated.result.decision is Decision.ALLOW
+    assert evaluated.result.authorization is not None
+    assert evaluated.result.evidence["settlement"] is None
+    assert evaluated.settlement is None
+    detection_evidence = cast(Mapping[str, JsonValue], processed.result.evidence["detection"])
+    assert detection_evidence["baseline_count"] == 0
+    assert adapter.attempt_count == 1
 
 
 def test_policy_block_never_reaches_simulated_settlement() -> None:

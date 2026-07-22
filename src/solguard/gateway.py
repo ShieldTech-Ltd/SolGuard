@@ -93,6 +93,21 @@ class PaymentGateway:
     def process(self, payload: PaymentRequest | Mapping[str, object]) -> GatewayOutcome:
         """Evaluate one request and settle only a clean, policy-compliant payment."""
 
+        return self._process(payload, settle=True)
+
+    def evaluate(self, payload: PaymentRequest | Mapping[str, object]) -> GatewayOutcome:
+        """Evaluate and authorize without calling the settlement boundary."""
+
+        return self._process(payload, settle=False)
+
+    def _process(
+        self,
+        payload: PaymentRequest | Mapping[str, object],
+        *,
+        settle: bool,
+    ) -> GatewayOutcome:
+        """Run the shared fail-closed path with an explicit settlement boundary."""
+
         started_ns = self._timer_ns()
         if isinstance(payload, PaymentRequest):
             request = payload
@@ -140,6 +155,17 @@ class PaymentGateway:
                 )
 
             authorization = self._authorization(request, observed_at=observed_at)
+            if not settle:
+                return self._outcome(
+                    request=request,
+                    decision=Decision.ALLOW,
+                    integrity=integrity_result,
+                    policy=policy_result,
+                    detection=detection_result,
+                    settlement=None,
+                    authorization=authorization,
+                    started_ns=started_ns,
+                )
             try:
                 settlement_result = self._settlement.settle(request, authorization)
             except AuthorizationRejected as exc:

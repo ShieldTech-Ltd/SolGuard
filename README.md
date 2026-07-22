@@ -182,6 +182,15 @@ Run the local simulated security dashboard:
 uv run solguard-dashboard
 ```
 
+Run the decision-only API for cryptographically authenticated autonomous intents:
+
+```bash
+uv run solguard-api --config ./autonomous-api.json
+```
+
+See the [autonomous payment-intent API guide](docs/AUTONOMOUS_API.md) for the public-key
+configuration, Ed25519 signing contract, quarantine semantics, and trust boundary.
+
 Open `http://127.0.0.1:8765`. Select **Start guided demo** for an eight-step,
 judge-facing walkthrough of a payment intent, canonical request, integrity check,
 financial mandate, behavioural analysis, authorization, wallet outcome, and hash-linked
