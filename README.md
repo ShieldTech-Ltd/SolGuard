@@ -203,6 +203,17 @@ and settlement references are computed during the run and explicitly labelled
 [autonomous security runner guide](docs/AUTONOMOUS_RUNNER.md) for the exact scenario and trust
 boundary.
 
+Run the authoritative problem-first attack comparison and protected-wallet proof:
+
+```bash
+uv run solguard-security-proof
+```
+
+This command needs no dashboard or network. It emits computed machine-readable evidence for the
+unsafe reference act, protected act, exact 8x and 2x boundaries, quarantine, velocity-only flag,
+replay, authorization mutation/reuse, failure injection, and safe recovery. Every value is labelled
+offline simulation; see [docs/SECURITY_PROOF.md](docs/SECURITY_PROOF.md).
+
 The [isolated wallet signer guide](docs/WALLET_SIGNER.md) documents the separate SolGuard
 authorization signature, transaction-field binding, atomic single-use enforcement, and disposable
 devnet key boundary.
