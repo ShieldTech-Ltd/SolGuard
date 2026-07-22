@@ -149,7 +149,7 @@ The protocol-independent contracts, simple mandate policy, four documented detec
 | Deterministic simulated settlement | Implemented and tested |
 | Metadata sanitizer | Implemented and tested |
 | Pay.sh sandbox adapter | Implemented, tested, and exercised against the official sandbox |
-| x402 v2 adapter | Solana-devnet mapping and pre-signing simulation implemented and tested; no network settlement |
+| x402 v2 adapter | Solana-devnet mapping and pre-signing simulation implemented and tested; opt-in live devnet executor available, with no committed transaction claim |
 | Live dashboard | Implemented and tested |
 | Audit receipts and local event stream | Implemented and tested |
 | Deterministic end-to-end demo command | Implemented and verified in consecutive clean processes |
@@ -210,8 +210,14 @@ Run the deterministic x402 v2 Solana-devnet-labelled signing simulation:
 uv run solguard-x402-demo
 ```
 
-This path validates official v2 envelopes and proves that a policy block never reaches
+The simulated command validates official v2 envelopes and proves that a policy block never reaches
 the injected payload signer. It does not create or settle a real Solana transaction.
+
+An optional official-SDK path can submit a real x402 USDC payment on Solana devnet.
+It requires disposable devnet credentials and an explicit confirmation flag; the base
+install and deterministic demo do not depend on it. Follow the
+[real devnet demonstration guide](docs/X402_LIVE_DEVNET.md) and describe a transaction
+as real only after its returned signature is independently visible on Solana Explorer.
 
 ## Build order
 
@@ -242,6 +248,7 @@ This is an early product thesis, not evidence of existing customers, revenue, or
 - [Single-use wallet authorization](docs/AUTHORIZATION.md)
 - [Pay.sh sandbox integration](docs/PAYSH.md)
 - [x402 v2 Solana-devnet adapter](docs/X402.md)
+- [Real x402 Solana-devnet demonstration](docs/X402_LIVE_DEVNET.md)
 - [Deterministic demonstration runner](docs/DEMO_RUNNER.md)
 - [Demo and validation plan](docs/DEMO_PLAN.md)
 - [Offline release evidence](evidence/README.md)
