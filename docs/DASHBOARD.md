@@ -36,6 +36,30 @@ state.
 
 All traffic is explicitly labelled `SIMULATED`.
 
+## Guided judge demonstration
+
+Select **Start guided demo** to enter the full-screen explanation mode. Choose any of the
+four scenario proofs, then run it once through the local gateway. The browser retains the
+returned state and reveals it across eight manual steps:
+
+1. agent payment intent;
+2. canonical request and request digest;
+3. integrity, freshness, and nonce result;
+4. active financial mandate result;
+5. behavioural rules and compound signals;
+6. final decision and authorization state;
+7. wallet call and simulated settlement state; and
+8. policy digest, redaction count, and hash-linked audit receipt.
+
+Next and Back support a presenter-led explanation. Auto-play advances through the same
+computed evidence without generating different values. The progress bar can jump to any
+step after the scenario has run. The final control closes the walkthrough and opens the
+complete receipt chain.
+
+The gateway evaluation itself is atomic. The walkthrough is explicitly labelled a
+guided replay of its returned result; it does not claim eight separate backend calls.
+The header independently labels the live security engine and simulated settlement.
+
 ## Product structure
 
 The page is organized so a non-code reviewer can understand the product without opening
@@ -48,7 +72,8 @@ the repository:
 5. the active financial mandate and simulated wallet state;
 6. a six-stage security pipeline highlighted from the latest decision;
 7. the recent transaction stream; and
-8. an inspectable hash-linked audit receipt chain.
+8. an inspectable hash-linked audit receipt chain; and
+9. a full-screen presenter mode that explains the same runtime evidence step by step.
 
 ## Visual proof
 

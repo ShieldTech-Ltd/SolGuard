@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="SolGuard autonomous payment security control plane">
   <title>SolGuard | Autonomous Payment Security</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/styles.css">
   <script src="/app.js" defer></script>
 </head>
@@ -26,6 +27,10 @@
       <small>No real funds &middot; Deterministic traffic</small>
     </div>
     <div class="top-actions">
+      <button class="primary-button" type="button" id="start-guided-demo">
+        <span aria-hidden="true">&#9654;</span>
+        Start guided demo
+      </button>
       <button class="secondary-button" type="button" id="open-audit-top">View audit</button>
       <button class="secondary-button" type="button" data-action="reset">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/></svg>
@@ -250,6 +255,121 @@
       </section>
     </main>
   </div>
+
+  <dialog id="guided-demo" class="guided-demo">
+    <div class="guide-shell">
+      <header class="guide-header">
+        <div class="guide-brand">
+          <span class="guide-brand-mark" aria-hidden="true">SG</span>
+          <div>
+            <p class="eyebrow">JUDGE WALKTHROUGH</p>
+            <h2>See one payment move through SolGuard</h2>
+          </div>
+        </div>
+        <div class="guide-truth-labels" aria-label="Demonstration evidence boundaries">
+          <span class="truth-live"><i aria-hidden="true"></i> LIVE SECURITY ENGINE</span>
+          <span class="truth-simulated">SIMULATED SETTLEMENT</span>
+        </div>
+        <button type="button" class="guide-close" id="close-guided-demo" aria-label="Close guided demo">&times;</button>
+      </header>
+
+      <div class="guide-layout">
+        <aside class="guide-scenarios" aria-labelledby="guide-scenario-title">
+          <div>
+            <p class="eyebrow">CHOOSE THE PROOF</p>
+            <h3 id="guide-scenario-title">What should the agent attempt?</h3>
+            <p>Each option sends deterministic traffic through the running Python gateway.</p>
+          </div>
+          <div class="guide-scenario-list">
+            <button type="button" data-guide-action="normal">
+              <span class="guide-scenario-icon allow">01</span>
+              <span><strong>Safe API payment</strong><small>Known recipient &middot; expected amount</small></span>
+            </button>
+            <button type="button" data-guide-action="approval">
+              <span class="guide-scenario-icon approval">02</span>
+              <span><strong>Unknown recipient</strong><small>Plausible request &middot; human review</small></span>
+            </button>
+            <button type="button" data-guide-action="replay">
+              <span class="guide-scenario-icon block">03</span>
+              <span><strong>Replay attack</strong><small>Same request &middot; duplicate nonce</small></span>
+            </button>
+            <button type="button" data-guide-action="attack" class="selected">
+              <span class="guide-scenario-icon block">04</span>
+              <span><strong>Compound drain</strong><small>Novel recipient &middot; burst velocity</small></span>
+            </button>
+          </div>
+          <div class="guide-boundary-note">
+            <strong>Honest evidence boundary</strong>
+            <p>The gateway decision and audit receipt are computed live. Wallet settlement remains clearly labelled simulation.</p>
+          </div>
+        </aside>
+
+        <main class="guide-main">
+          <div class="guide-progress-row">
+            <div>
+              <span id="guide-step-count">READY TO START</span>
+              <strong id="guide-progress-label">Choose a scenario</strong>
+            </div>
+            <div class="guide-progress-track" id="guide-progress-track" aria-label="Walkthrough progress"></div>
+          </div>
+
+          <section class="guide-stage" aria-live="polite">
+            <div class="guide-stage-copy">
+              <p class="eyebrow" id="guide-kicker">THE MISSION</p>
+              <h2 id="guide-title">Stop a compromised agent before the wallet signs</h2>
+              <p id="guide-copy">Select a proof, then run one real local gateway evaluation. Use Next to reveal exactly what happened at each boundary.</p>
+            </div>
+
+            <div class="guide-flow" id="guide-flow" aria-label="Payment security walkthrough">
+              <article data-guide-node="agent"><span>1</span><div><strong>Agent intent</strong><small>Waiting</small></div></article>
+              <i aria-hidden="true">&rarr;</i>
+              <article data-guide-node="normalize"><span>2</span><div><strong>Canonical request</strong><small>Waiting</small></div></article>
+              <i aria-hidden="true">&rarr;</i>
+              <article data-guide-node="integrity"><span>3</span><div><strong>Integrity</strong><small>Waiting</small></div></article>
+              <i aria-hidden="true">&rarr;</i>
+              <article data-guide-node="mandate"><span>4</span><div><strong>Mandate</strong><small>Waiting</small></div></article>
+              <i aria-hidden="true">&rarr;</i>
+              <article data-guide-node="behaviour"><span>5</span><div><strong>Behaviour</strong><small>Waiting</small></div></article>
+              <i aria-hidden="true">&rarr;</i>
+              <article data-guide-node="authorization"><span>6</span><div><strong>Authorization</strong><small>Waiting</small></div></article>
+              <i aria-hidden="true">&rarr;</i>
+              <article data-guide-node="wallet"><span>7</span><div><strong>Wallet</strong><small>Waiting</small></div></article>
+              <i aria-hidden="true">&rarr;</i>
+              <article data-guide-node="evidence"><span>8</span><div><strong>Evidence</strong><small>Waiting</small></div></article>
+            </div>
+
+            <div class="guide-evidence-grid">
+              <article class="guide-primary-evidence">
+                <span id="guide-result-label">READY</span>
+                <strong id="guide-result-value">Choose a proof to begin</strong>
+                <p id="guide-result-detail">No payment request has been sent.</p>
+              </article>
+              <article class="guide-facts">
+                <div class="guide-facts-heading"><span>COMPUTED EVIDENCE</span><small id="guide-evidence-source">Awaiting gateway</small></div>
+                <dl id="guide-facts-list">
+                  <div><dt>Security engine</dt><dd>Connected</dd></div>
+                  <div><dt>Settlement mode</dt><dd>Simulation</dd></div>
+                  <div><dt>Next action</dt><dd>Run scenario</dd></div>
+                </dl>
+              </article>
+            </div>
+          </section>
+
+          <footer class="guide-controls">
+            <div class="guide-playback-note">
+              <i aria-hidden="true"></i>
+              <span>Guided replay of one live gateway result</span>
+            </div>
+            <div class="guide-control-buttons">
+              <button type="button" class="secondary-button" id="guide-back" disabled>Back</button>
+              <button type="button" class="secondary-button" id="guide-auto">Auto-play</button>
+              <button type="button" class="primary-button guide-next" id="guide-next">Run compound drain</button>
+            </div>
+          </footer>
+        </main>
+      </div>
+    </div>
+  </dialog>
 
   <dialog id="audit-dialog" class="audit-dialog">
     <form method="dialog" class="dialog-header">

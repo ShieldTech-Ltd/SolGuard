@@ -17,6 +17,22 @@ const elements = {
   decisionRequest: document.getElementById("decision-request"),
   decisionValue: document.getElementById("decision-value"),
   eventList: document.getElementById("event-list"),
+  guideAuto: document.getElementById("guide-auto"),
+  guideBack: document.getElementById("guide-back"),
+  guideCopy: document.getElementById("guide-copy"),
+  guideEvidenceSource: document.getElementById("guide-evidence-source"),
+  guideFactsList: document.getElementById("guide-facts-list"),
+  guidedDemo: document.getElementById("guided-demo"),
+  guideKicker: document.getElementById("guide-kicker"),
+  guideNext: document.getElementById("guide-next"),
+  guidePrimaryEvidence: document.querySelector(".guide-primary-evidence"),
+  guideProgressLabel: document.getElementById("guide-progress-label"),
+  guideProgressTrack: document.getElementById("guide-progress-track"),
+  guideResultDetail: document.getElementById("guide-result-detail"),
+  guideResultLabel: document.getElementById("guide-result-label"),
+  guideResultValue: document.getElementById("guide-result-value"),
+  guideStepCount: document.getElementById("guide-step-count"),
+  guideTitle: document.getElementById("guide-title"),
   lastSettlement: document.getElementById("last-settlement"),
   mandateBlocked: document.getElementById("mandate-blocked"),
   mandateHeading: document.getElementById("mandate-heading"),
@@ -42,6 +58,8 @@ const elements = {
 
 const buttons = Array.from(document.querySelectorAll("button[data-action]"));
 const scenarioButtons = Array.from(document.querySelectorAll("button[data-scenario]"));
+const guideScenarioButtons = Array.from(document.querySelectorAll("button[data-guide-action]"));
+const guideNodes = Array.from(document.querySelectorAll("[data-guide-node]"));
 const pipelineSteps = Object.fromEntries(
   Array.from(document.querySelectorAll("[data-pipeline]")).map((element) => [
     element.dataset.pipeline,
@@ -78,6 +96,30 @@ const reasonLabels = {
 };
 
 let isBusy = false;
+let guideAction = "attack";
+let guideStep = 0;
+let guideState = null;
+let guideAudit = null;
+let guideAutoRunning = false;
+let guideError = "";
+
+const guideScenarioLabels = {
+  approval: "unknown recipient",
+  attack: "compound drain",
+  normal: "safe API payment",
+  replay: "replay attack",
+};
+
+const guideNodeNames = [
+  "agent",
+  "normalize",
+  "integrity",
+  "mandate",
+  "behaviour",
+  "authorization",
+  "wallet",
+  "evidence",
+];
 
 function textElement(tag, value, className = "") {
   const element = document.createElement(tag);
@@ -142,6 +184,339 @@ function redactionEvidence(event) {
     categories: entries.map(([category]) => category.replaceAll("_", " ")),
     total: entries.reduce((sum, [, count]) => sum + count, 0),
   };
+}
+
+function guideFacts(entries) {
+  elements.guideFactsList.replaceChildren();
+  for (const [term, description] of entries) {
+    const row = document.createElement("div");
+    row.append(textElement("dt", term), textElement("dd", String(description)));
+    elements.guideFactsList.append(row);
+  }
+}
+
+function setGuideEvidence({ label, value, detail, tone = "", facts, source }) {
+  elements.guideResultLabel.textContent = label;
+  elements.guideResultValue.textContent = value;
+  elements.guideResultDetail.textContent = detail;
+  elements.guidePrimaryEvidence.className = `guide-primary-evidence ${tone}`.trim();
+  elements.guideEvidenceSource.textContent = source;
+  guideFacts(facts);
+}
+
+function guideStageStatus(event, index) {
+  if (!event) return { className: "", detail: "Waiting" };
+  const reasons = new Set(event.reason_codes);
+  const integrityBlocked = isIntegrityBlock(reasons);
+  const policyReasons = event.reason_codes.filter((reason) => reason.startsWith("POLICY_"));
+  const detectionReasons = event.reason_codes.filter((reason) => reason.startsWith("DETECTION_"));
+  if (index === 0) return { className: "complete", detail: "Submitted" };
+  if (index === 1) return { className: "complete", detail: "Normalized" };
+  if (index === 2) {
+    return integrityBlocked
+      ? { className: "block", detail: humanReason(event.reason_codes[0]) }
+      : { className: "complete", detail: "Fresh request" };
+  }
+  if (index === 3) {
+    if (integrityBlocked) return { className: "skipped", detail: "Not evaluated" };
+    return policyReasons.length
+      ? { className: "block", detail: humanReason(policyReasons[0]) }
+      : { className: "complete", detail: "Authorized" };
+  }
+  if (index === 4) {
+    if (integrityBlocked || policyReasons.length) return { className: "skipped", detail: "Not evaluated" };
+    if (!detectionReasons.length) return { className: "complete", detail: "Clean" };
+    return event.decision === "REQUIRE_APPROVAL"
+      ? { className: "warn", detail: "Flagged" }
+      : { className: "block", detail: "Block signal" };
+  }
+  if (index === 5) {
+    if (event.decision === "ALLOW") return { className: "complete", detail: "Issued" };
+    if (event.decision === "REQUIRE_APPROVAL") return { className: "warn", detail: "Paused" };
+    return { className: "block", detail: "Withheld" };
+  }
+  if (index === 6) {
+    return event.signing_state === "NOT_SIGNED"
+      ? { className: "block", detail: "Not called" }
+      : { className: "complete", detail: "Signed - simulated" };
+  }
+  return { className: "complete", detail: "Hash-linked" };
+}
+
+function renderGuideFlow(event) {
+  guideNodes.forEach((node, index) => {
+    const status = guideStageStatus(event, index);
+    const reached = guideStep > index;
+    node.className = reached ? status.className : "";
+    if (guideStep === index + 1) node.classList.add("active");
+    node.querySelector("small").textContent = reached ? status.detail : "Waiting";
+  });
+}
+
+function renderGuideProgress() {
+  if (!elements.guideProgressTrack.childElementCount) {
+    for (let index = 1; index <= guideNodeNames.length; index += 1) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.setAttribute("aria-label", `Open walkthrough step ${index}`);
+      button.addEventListener("click", () => {
+        if (!guideState) return;
+        guideStep = index;
+        renderGuide();
+      });
+      elements.guideProgressTrack.append(button);
+    }
+  }
+  Array.from(elements.guideProgressTrack.children).forEach((button, index) => {
+    button.disabled = !guideState;
+    button.className = index + 1 < guideStep ? "complete" : index + 1 === guideStep ? "active" : "";
+  });
+}
+
+function guideStageContent(event, mandate) {
+  const reasons = new Set(event.reason_codes);
+  const policyReasons = event.reason_codes.filter((reason) => reason.startsWith("POLICY_"));
+  const detectionReasons = event.reason_codes.filter((reason) => reason.startsWith("DETECTION_"));
+  const redactions = redactionEvidence(event);
+  const source = `Returned by /api/demo/${guideAction}`;
+
+  if (guideStep === 1) {
+    return {
+      kicker: "STEP 1 · AGENT INTENT",
+      title: "The autonomous agent requests a payment",
+      copy: "This is the real request outcome returned by the selected local scenario—not a pre-filled dashboard counter.",
+      evidence: {
+        label: "PAYMENT INTENT",
+        value: `${event.amount} ${event.asset} to ${event.recipient}`,
+        detail: "The agent submits intent. SolGuard still controls whether a signing authorization can exist.",
+        facts: [["Request ID", event.request_id], ["Agent", event.agent_id], ["Observed", formatObservedAt(event.observed_at, true)]],
+        source,
+      },
+    };
+  }
+  if (guideStep === 2) {
+    return {
+      kicker: "STEP 2 · CANONICAL REQUEST",
+      title: "One immutable request crosses the security boundary",
+      copy: "SolGuard binds the amount, recipient, mandate, metadata and request identity into the canonical digest used by later controls.",
+      evidence: {
+        label: "NORMALIZED",
+        value: "Canonical payment request created",
+        detail: "Downstream checks and the audit receipt refer to this exact request digest.",
+        facts: [["Request digest", shortDigest(event.request_digest, 34)], ["Asset", event.asset], ["Delegated purpose", mandate.purpose]],
+        source,
+      },
+    };
+  }
+  if (guideStep === 3) {
+    const blocked = isIntegrityBlock(reasons);
+    return {
+      kicker: "STEP 3 · INTEGRITY",
+      title: blocked ? "A duplicate request dies before policy evaluation" : "Freshness and replay checks pass",
+      copy: blocked ? "The nonce has already been consumed. SolGuard fails closed before mandate, behaviour, authorization or wallet signing." : "The request is current, structurally valid and has not reused a consumed nonce.",
+      evidence: {
+        label: blocked ? "BLOCK" : "PASS",
+        value: blocked ? humanReason(event.reason_codes[0]) : "Fresh request accepted",
+        detail: blocked ? "No later control or signer needs to trust this request." : "The request can continue to the financial mandate.",
+        tone: blocked ? "block" : "allow",
+        facts: [["Integrity result", blocked ? humanReason(event.reason_codes[0]) : "Valid + fresh"], ["Request ID", event.request_id], ["Next boundary", blocked ? "Stopped" : "Financial mandate"]],
+        source,
+      },
+    };
+  }
+  if (guideStep === 4) {
+    const skipped = isIntegrityBlock(reasons);
+    const blocked = policyReasons.length > 0;
+    return {
+      kicker: "STEP 4 · FINANCIAL MANDATE",
+      title: skipped ? "Policy is not evaluated after an integrity block" : blocked ? "The agent exceeds its delegated authority" : "The payment fits the agent's mandate",
+      copy: skipped ? "Fail-closed ordering prevents rejected traffic from reaching later controls." : "The mandate is configured by a human once; SolGuard enforces it automatically for every payment.",
+      evidence: {
+        label: skipped ? "NOT EVALUATED" : blocked ? "BLOCK" : "PASS",
+        value: skipped ? "Stopped at integrity" : blocked ? humanReason(policyReasons[0]) : `${event.amount} ${event.asset} is within the ${mandate.max_single_payment} ${event.asset} limit`,
+        detail: skipped ? "The invalid request cannot influence policy or behavioural state." : "Recipient, amount, asset, purpose and validity are checked before authorization.",
+        tone: blocked ? "block" : skipped ? "" : "allow",
+        facts: [["Maximum payment", `${mandate.max_single_payment} ${event.asset}`], ["Recipient policy", mandate.policy_mode.replaceAll("_", " ")], ["Hard-block list", mandate.blocked_recipients.join(", ") || "None"]],
+        source,
+      },
+    };
+  }
+  if (guideStep === 5) {
+    const skipped = isIntegrityBlock(reasons) || policyReasons.length > 0;
+    const warned = event.decision === "REQUIRE_APPROVAL";
+    const blocked = detectionReasons.length > 0 && event.decision === "BLOCK";
+    const labels = detectionReasons.map(humanReason);
+    return {
+      kicker: "STEP 5 · BEHAVIOURAL ANALYSIS",
+      title: skipped ? "Rejected traffic cannot poison the behavioural baseline" : warned ? "Anomaly detected: pause for exceptional review" : blocked ? "Multiple weak signals combine into a hard block" : "Behaviour matches the clean baseline",
+      copy: skipped ? "SolGuard records the security outcome without learning from traffic that failed an earlier boundary." : "Velocity alone flags; the documented compound condition is required to block this drain scenario.",
+      evidence: {
+        label: skipped ? "NOT EVALUATED" : warned ? "FLAG" : blocked ? "BLOCK" : "PASS",
+        value: skipped ? "Stopped before detection" : labels.length ? labels.join(" + ") : "No behavioural rule fired",
+        detail: blocked ? "New recipient, elevated amount and high velocity are present together." : warned ? "No automatic signing authorization is issued." : "The clean request can proceed.",
+        tone: warned ? "warn" : blocked ? "block" : skipped ? "" : "allow",
+        facts: [["Triggered rules", labels.join(" · ") || "None"], ["Decision so far", decisionLabel(event.decision)], ["Baseline protection", skipped ? "Not updated" : "Only allowed traffic learns"]],
+        source,
+      },
+    };
+  }
+  if (guideStep === 6) {
+    const allowed = event.decision === "ALLOW";
+    const warned = event.decision === "REQUIRE_APPROVAL";
+    return {
+      kicker: "STEP 6 · AUTHORIZATION",
+      title: allowed ? "SolGuard issues one request-bound authorization" : warned ? "SolGuard pauses without authorizing the wallet" : "SolGuard withholds authorization",
+      copy: allowed ? "The authorization is short-lived, bound to this exact request and consumed once at the wallet boundary." : "A decision is useful only if the wallet boundary enforces it. Without authorization, signing cannot begin.",
+      evidence: {
+        label: decisionLabel(event.decision),
+        value: allowed ? "Single-use authorization issued" : warned ? "Exceptional review required" : "No authorization exists",
+        detail: `${event.latency_ms} ms measured by the running gateway for this decision.`,
+        tone: allowed ? "allow" : warned ? "warn" : "block",
+        facts: [["Final decision", decisionLabel(event.decision)], ["Reason codes", event.reason_codes.map(humanReason).join(" · ") || "All controls passed"], ["Gateway latency", `${event.latency_ms} ms`]],
+        source,
+      },
+    };
+  }
+  if (guideStep === 7) {
+    const signed = event.signing_state !== "NOT_SIGNED";
+    return {
+      kicker: "STEP 7 · WALLET BOUNDARY",
+      title: signed ? "The allowed request reaches simulated signing" : "The wallet signer is never called",
+      copy: signed ? "This local path consumes the authorization and produces clearly labelled simulated settlement evidence." : "Stopping the signature is the security outcome: the blocked request cannot move funds.",
+      evidence: {
+        label: signed ? "SIGNED · SIMULATED" : "NOT CALLED",
+        value: signed ? `${event.amount} ${event.asset} settled in simulation` : `${event.amount} ${event.asset} prevented from signing`,
+        detail: signed ? "No real funds moved. A verified devnet signature would be shown separately." : "The wallet balance is unchanged by this blocked request.",
+        tone: signed ? "allow" : "block",
+        facts: [["Signing state", event.signing_state.replaceAll("_", " ")], ["Settlement reference", event.settlement_reference ? shortDigest(event.settlement_reference, 34) : "None"], ["Current wallet balance", `${guideState.wallet_balance} ${event.asset}`]],
+        source,
+      },
+    };
+  }
+  const chainValid = guideAudit?.valid_chain === true;
+  return {
+    kicker: "STEP 8 · VERIFIABLE EVIDENCE",
+    title: "The decision becomes a portable, hash-linked receipt",
+    copy: "The dashboard shows sanitized metadata and a receipt digest produced from the running event. Reviewers can open the complete local chain.",
+    evidence: {
+      label: chainValid ? "VALID HASH-LINKED CHAIN" : "EVIDENCE AVAILABLE",
+      value: decisionLabel(event.decision) + " is recorded without exposing supported PII patterns",
+      detail: redactions.total ? `${redactions.total} sensitive value${redactions.total === 1 ? "" : "s"} redacted before display.` : "No supported sensitive pattern was present in this request.",
+      tone: chainValid ? "allow" : "",
+      facts: [["Receipt digest", shortDigest(event.receipt_digest, 34)], ["Policy digest", shortDigest(event.policy_version, 34)], ["Retained receipts", guideAudit?.retained ?? "Unavailable"]],
+      source: "Returned by /api/audit",
+    },
+  };
+}
+
+function renderGuide() {
+  renderGuideProgress();
+  elements.guideBack.disabled = guideStep === 0 || guideAutoRunning;
+  elements.guideAuto.textContent = guideAutoRunning ? "Stop auto-play" : "Auto-play";
+  guideScenarioButtons.forEach((button) => { button.disabled = guideAutoRunning; });
+
+  if (!guideState || guideStep === 0) {
+    elements.guideStepCount.textContent = "READY TO START";
+    elements.guideProgressLabel.textContent = `Selected: ${guideScenarioLabels[guideAction]}`;
+    elements.guideKicker.textContent = "THE MISSION";
+    elements.guideTitle.textContent = "Stop a compromised agent before the wallet signs";
+    elements.guideCopy.textContent = "Run one real local gateway evaluation, then use Next to reveal what happened at every security boundary.";
+    setGuideEvidence({
+      label: guideError ? "FAILED CLOSED" : "READY",
+      value: guideError || `Run ${guideScenarioLabels[guideAction]}`,
+      detail: guideError ? "No trusted result was rendered. Retry when the gateway is available." : "The result will be computed by the Python gateway and returned to this browser.",
+      tone: guideError ? "block" : "",
+      facts: [["Security engine", "Connected"], ["Settlement mode", "Simulation"], ["Next action", "POST selected scenario"]],
+      source: "Awaiting gateway",
+    });
+    renderGuideFlow(null);
+    elements.guideNext.textContent = `Run ${guideScenarioLabels[guideAction]}`;
+    elements.guideNext.disabled = guideAutoRunning;
+    return;
+  }
+
+  const event = guideState.events[0];
+  const stage = guideStageContent(event, guideState.active_mandate);
+  elements.guideStepCount.textContent = `STEP ${guideStep} OF ${guideNodeNames.length}`;
+  elements.guideProgressLabel.textContent = guideNodeNames[guideStep - 1].replaceAll("_", " ").toUpperCase();
+  elements.guideKicker.textContent = stage.kicker;
+  elements.guideTitle.textContent = stage.title;
+  elements.guideCopy.textContent = stage.copy;
+  setGuideEvidence(stage.evidence);
+  renderGuideFlow(event);
+  elements.guideNext.textContent = guideStep === guideNodeNames.length ? "Open audit receipt" : "Next security boundary";
+  elements.guideNext.disabled = guideAutoRunning;
+}
+
+function selectGuideAction(action) {
+  guideAction = action;
+  guideStep = 0;
+  guideState = null;
+  guideAudit = null;
+  guideError = "";
+  for (const button of guideScenarioButtons) {
+    button.classList.toggle("selected", button.dataset.guideAction === action);
+  }
+  renderGuide();
+}
+
+async function executeGuideScenario() {
+  guideError = "";
+  elements.guideNext.disabled = true;
+  elements.guideNext.textContent = "Running gateway...";
+  guideScenarioButtons.forEach((button) => { button.disabled = true; });
+  try {
+    const response = await fetch(`/api/demo/${guideAction}`, { method: "POST" });
+    if (!response.ok) throw new Error("Scenario failed safely");
+    guideState = await response.json();
+    const auditResponse = await fetch("/api/audit", { cache: "no-store" });
+    guideAudit = auditResponse.ok ? await auditResponse.json() : null;
+    guideStep = 1;
+    renderState(guideState);
+  } catch (error) {
+    guideState = null;
+    guideError = error instanceof Error ? error.message : "Scenario unavailable";
+  } finally {
+    renderGuide();
+  }
+}
+
+async function advanceGuide() {
+  if (!guideState) {
+    await executeGuideScenario();
+    return;
+  }
+  if (guideStep < guideNodeNames.length) {
+    guideStep += 1;
+    renderGuide();
+    return;
+  }
+  elements.guidedDemo.close();
+  await openAudit();
+}
+
+async function autoPlayGuide() {
+  if (guideAutoRunning) {
+    guideAutoRunning = false;
+    renderGuide();
+    return;
+  }
+  guideAutoRunning = true;
+  renderGuide();
+  if (!guideState) await executeGuideScenario();
+  if (!guideState) {
+    guideAutoRunning = false;
+    renderGuide();
+    return;
+  }
+  while (guideAutoRunning && guideStep < guideNodeNames.length) {
+    await wait(1050);
+    if (!guideAutoRunning) break;
+    guideStep += 1;
+    renderGuide();
+  }
+  guideAutoRunning = false;
+  renderGuide();
 }
 
 function isIntegrityBlock(reasons) {
@@ -472,6 +847,26 @@ async function openAudit() {
 buttons.forEach((button) => {
   button.addEventListener("click", () => runAction(button.dataset.action));
 });
+guideScenarioButtons.forEach((button) => {
+  button.addEventListener("click", () => selectGuideAction(button.dataset.guideAction));
+});
+document.getElementById("start-guided-demo").addEventListener("click", () => {
+  selectGuideAction("attack");
+  elements.guidedDemo.showModal();
+});
+document.getElementById("close-guided-demo").addEventListener("click", () => {
+  guideAutoRunning = false;
+  elements.guidedDemo.close();
+});
+elements.guidedDemo.addEventListener("close", () => {
+  guideAutoRunning = false;
+});
+elements.guideBack.addEventListener("click", () => {
+  if (guideStep > 0) guideStep -= 1;
+  renderGuide();
+});
+elements.guideNext.addEventListener("click", advanceGuide);
+elements.guideAuto.addEventListener("click", autoPlayGuide);
 document.getElementById("open-audit").addEventListener("click", openAudit);
 document.getElementById("open-audit-top").addEventListener("click", openAudit);
 

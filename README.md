@@ -182,7 +182,12 @@ Run the local simulated security dashboard:
 uv run solguard-dashboard
 ```
 
-Open `http://127.0.0.1:8765`. The dashboard starts with an empty runtime state; use its normal-payment and compromised-agent controls to generate computed local events.
+Open `http://127.0.0.1:8765`. Select **Start guided demo** for an eight-step,
+judge-facing walkthrough of a payment intent, canonical request, integrity check,
+financial mandate, behavioural analysis, authorization, wallet outcome, and hash-linked
+receipt. The manual Next/Back controls and optional auto-play reveal one result computed
+by the running gateway. Security decisions are live local computations; settlement is
+labelled simulation unless separate verified devnet evidence exists.
 
 After installing the official Pay CLI, attempt one external ephemeral-wallet sandbox purchase through the same gateway:
 

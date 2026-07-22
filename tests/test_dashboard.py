@@ -270,6 +270,7 @@ def post(url: str) -> tuple[int, dict[str, JsonValue]]:
         ("/", "text/html", "decision-value"),
         ("/styles.css", "text/css", "--background"),
         ("/app.js", "text/javascript", "renderDecisionSpotlight"),
+        ("/favicon.svg", "image/svg+xml", "#27b7ff"),
     ],
 )
 def test_server_delivers_dashboard_assets(path: str, content_type: str, marker: str) -> None:
@@ -301,11 +302,19 @@ def test_stage_dashboard_packages_visible_enforcement_proof() -> None:
     assert 'id="privacy-state"' in html
     assert 'id="receipt-state"' in html
     assert 'id="audit-dialog"' in html
+    assert 'id="guided-demo"' in html
+    assert 'id="start-guided-demo"' in html
+    assert 'data-guide-action="attack"' in html
+    assert "LIVE SECURITY ENGINE" in html
+    assert "SIMULATED SETTLEMENT" in html
     assert "No signing authorization reached the wallet" in javascript
     assert "No settlement reference generated" in javascript
     assert "redactionEvidence" in javascript
     assert "renderPipeline" in javascript
     assert "renderAudit" in javascript
+    assert "executeGuideScenario" in javascript
+    assert "guideStageContent" in javascript
+    assert "Guided replay of one live gateway result" in html
     assert "REQUEST_REPLAYED" in javascript
 
 
@@ -323,6 +332,9 @@ def test_server_state_and_scenario_endpoints_return_runtime_data() -> None:
     assert json.loads(initial)["decision_counts"]["total"] == 0
     assert normal_status == approval_status == replay_status == attack_status == reset_status == 200
     assert cast(dict[str, int], normal["decision_counts"])["total"] == 1
+    normal_event = cast(list[dict[str, JsonValue]], normal["events"])[0]
+    assert str(normal_event["request_digest"]).startswith("sha256:")
+    assert str(normal_event["policy_version"]).startswith("sha256:")
     assert approval["active_scenario"] == "NEW_RECIPIENT"
     assert cast(dict[str, int], approval["decision_counts"])["require_approval"] == 1
     assert replay["active_scenario"] == "REPLAY_ATTACK"
