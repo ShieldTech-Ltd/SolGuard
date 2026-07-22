@@ -57,6 +57,7 @@ def test_initial_snapshot_contains_only_computed_empty_state() -> None:
         "max_single_payment": "100",
         "purpose": "verified API purchase",
         "policy_mode": "OPEN_WITH_HARD_BLOCKS",
+        "valid_until": "2026-07-26T10:00:00Z",
     }
 
 
@@ -289,6 +290,7 @@ def test_stage_dashboard_packages_visible_enforcement_proof() -> None:
         _, javascript, _ = get(f"{base}/app.js")
 
     assert "Stop the signature" in html
+    assert "AUTONOMOUS SECURITY CONTROL PLANE" in html
     assert "ATTEMPTED VALUE BLOCKED" in html
     assert 'data-action="approval"' in html
     assert 'data-action="replay"' in html
@@ -298,10 +300,12 @@ def test_stage_dashboard_packages_visible_enforcement_proof() -> None:
     assert 'id="settlement-state"' in html
     assert 'id="privacy-state"' in html
     assert 'id="receipt-state"' in html
+    assert 'id="audit-dialog"' in html
     assert "No signing authorization reached the wallet" in javascript
     assert "No settlement reference generated" in javascript
     assert "redactionEvidence" in javascript
     assert "renderPipeline" in javascript
+    assert "renderAudit" in javascript
     assert "REQUEST_REPLAYED" in javascript
 
 

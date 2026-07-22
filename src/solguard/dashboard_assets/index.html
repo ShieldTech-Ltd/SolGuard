@@ -3,273 +3,261 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Live SolGuard pre-signing security demonstration">
-  <title>SolGuard Live Security Console</title>
+  <meta name="description" content="SolGuard autonomous payment security control plane">
+  <title>SolGuard | Autonomous Payment Security</title>
   <link rel="stylesheet" href="/styles.css">
   <script src="/app.js" defer></script>
 </head>
 <body data-decision="idle">
   <div class="background-grid" aria-hidden="true"></div>
-  <main class="shell">
-    <header class="topbar">
-      <div class="brand-lockup">
-        <div class="brand-mark" aria-hidden="true">
-          <svg viewBox="0 0 48 48" role="img">
-            <path d="M24 4 40 10v12c0 10.6-6.1 18.2-16 22C14.1 40.2 8 32.6 8 22V10l16-6Z" fill="none" stroke="currentColor" stroke-width="3"/>
-            <path d="m16.5 24 5 5 10-11" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"/>
-          </svg>
-        </div>
-        <div>
-          <p class="eyebrow">AUTONOMOUS PAYMENT DEFENCE</p>
-          <strong class="brand-name">SolGuard</strong>
-        </div>
-      </div>
-      <nav class="site-nav" aria-label="Dashboard sections">
-        <a href="#scenarios">Live scenarios</a>
-        <a href="#pipeline">Security path</a>
-        <a href="#capabilities">What is built</a>
-        <a href="#evidence">Evidence</a>
+  <header class="topbar">
+    <a class="brand" href="#overview" aria-label="SolGuard dashboard home">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 48 48">
+          <path d="M24 3 41 10v13c0 11-6.5 18.5-17 22C13.5 41.5 7 34 7 23V10l17-7Z" fill="none" stroke="currentColor" stroke-width="2.5"/>
+          <rect x="17" y="20" width="14" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="2"/>
+          <path d="M20 20v-3.5a4 4 0 0 1 8 0V20M24 24v4" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2"/>
+        </svg>
+      </span>
+      <span><strong>SOLGUARD</strong><small>Pre-Signing Security Gateway for Autonomous Agent Payments</small></span>
+    </a>
+    <div class="demo-mode" aria-label="Demonstration environment">
+      <strong><i aria-hidden="true"></i> LIVE DEMO &middot; SIMULATION MODE</strong>
+      <small>No real funds &middot; Deterministic traffic</small>
+    </div>
+    <div class="top-actions">
+      <button class="secondary-button" type="button" id="open-audit-top">View audit</button>
+      <button class="secondary-button" type="button" data-action="reset">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/></svg>
+        Reset demo
+      </button>
+    </div>
+  </header>
+
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Dashboard navigation">
+      <nav>
+        <a class="active" href="#overview"><span class="nav-icon">&#8962;</span>Dashboard</a>
+        <a href="#transactions"><span class="nav-icon">&#8644;</span>Transactions</a>
+        <a href="#mandate"><span class="nav-icon">&#9638;</span>Mandate</a>
+        <a href="#pipeline"><span class="nav-icon">&#10230;</span>Security path</a>
+        <a href="#audit"><span class="nav-icon">&#10003;</span>Audit evidence</a>
       </nav>
-      <div class="environment" aria-label="Demonstration environment">
-        <span class="environment-pill"><i aria-hidden="true"></i>LOCAL ENGINE ONLINE</span>
-        <span>Simulated wallet · No real funds</span>
+
+      <section class="system-card" aria-label="System status">
+        <span>System status</span>
+        <strong id="system-status"><i aria-hidden="true"></i> OPERATIONAL</strong>
+        <small>Local engine connected</small>
+        <dl>
+          <div><dt>Version</dt><dd>v0.1.0-demo</dd></div>
+          <div><dt>Settlement</dt><dd>Local simulation</dd></div>
+          <div><dt>Traffic</dt><dd>Deterministic</dd></div>
+        </dl>
+      </section>
+
+      <div class="company-mark">
+        <span class="mini-shield" aria-hidden="true">SG</span>
+        <span>ShieldTech Ltd</span>
       </div>
-    </header>
+    </aside>
 
-    <section class="hero" aria-labelledby="hero-heading">
-      <div>
-        <p class="section-label">PRE-SIGNING SECURITY GATEWAY</p>
-        <h1 id="hero-heading">Stop the signature.<br><span>Stop the drain.</span></h1>
+    <main class="dashboard" id="overview">
+      <div class="dashboard-grid">
+        <section class="primary-column">
+          <section class="panel security-overview" aria-labelledby="overview-title">
+            <div class="panel-heading">
+              <div>
+                <p class="eyebrow">AUTONOMOUS SECURITY CONTROL PLANE</p>
+                <h1 id="overview-title">Live security overview</h1>
+              </div>
+              <div class="active-scenario">
+                <span>Active scenario</span>
+                <strong id="scenario-name">Ready</strong>
+              </div>
+            </div>
+
+            <div class="control-flow" aria-label="Agent payment protection flow">
+              <article class="flow-node agent-node">
+                <span class="node-label">AGENT</span>
+                <small>Autonomous AI</small>
+                <svg viewBox="0 0 96 96" aria-hidden="true">
+                  <circle cx="48" cy="48" r="36"/><rect x="27" y="34" width="42" height="32" rx="12"/>
+                  <circle cx="39" cy="48" r="3"/><circle cx="57" cy="48" r="3"/><path d="M39 58h18M48 25v-8M32 28l-5-7M64 28l5-7"/>
+                </svg>
+                <strong id="agent-state">READY</strong>
+              </article>
+
+              <span class="flow-arrow" aria-hidden="true">&rarr;</span>
+
+              <article class="flow-node guard-node">
+                <div class="guard-title">
+                  <span class="guard-shield" aria-hidden="true">SG</span>
+                  <div><strong>SOLGUARD</strong><small>Pre-signing gateway</small></div>
+                </div>
+                <ul class="guard-checks">
+                  <li id="integrity-check"><i>&check;</i><span>Integrity check</span></li>
+                  <li id="mandate-check"><i>&check;</i><span>Financial mandate</span></li>
+                  <li id="behaviour-check"><i>&check;</i><span>Behavioural analysis</span></li>
+                  <li id="authorization-check"><i>&check;</i><span>Authorization decision</span></li>
+                </ul>
+              </article>
+
+              <span class="flow-arrow" aria-hidden="true">&rarr;</span>
+
+              <article class="flow-node wallet-node">
+                <span class="node-label">WALLET BOUNDARY</span>
+                <small>Signer protection</small>
+                <svg viewBox="0 0 96 96" aria-hidden="true">
+                  <circle cx="48" cy="48" r="36"/><rect x="31" y="43" width="34" height="27" rx="4"/>
+                  <path d="M37 43v-8a11 11 0 0 1 22 0v8"/>
+                </svg>
+                <strong id="signer-state">WAITING</strong>
+                <span id="signer-detail" class="sr-only">No payment evaluated</span>
+              </article>
+
+              <span class="flow-arrow" aria-hidden="true">&rarr;</span>
+
+              <article class="flow-node settlement-node">
+                <span class="node-label">SETTLEMENT</span>
+                <small>Simulated</small>
+                <svg viewBox="0 0 96 96" aria-hidden="true">
+                  <path d="m48 20 27 15-27 15-27-15 27-15Z"/><path d="m24 48 24 14 24-14M24 61l24 14 24-14"/>
+                </svg>
+                <strong id="settlement-state">NONE</strong>
+                <span id="settlement-detail" class="sr-only">No settlement reference</span>
+              </article>
+            </div>
+
+            <div class="decision-ribbon" aria-live="polite">
+              <span class="decision-dot" aria-hidden="true"></span>
+              <div>
+                <span id="decision-request">No request processed</span>
+                <strong id="decision-value" class="decision-value">STANDBY</strong>
+              </div>
+              <p id="decision-copy">Choose a scenario to send deterministic traffic through the real gateway.</p>
+              <div class="decision-meta">
+                <strong id="decision-amount">Waiting for agent intent</strong>
+                <span id="decision-latency">NO DATA</span>
+              </div>
+            </div>
+            <div id="reason-list" class="reason-list" aria-label="Decision reasons">
+              <span class="reason-chip neutral">NO DECISION YET</span>
+            </div>
+            <span id="privacy-state" class="sr-only">Ready</span>
+            <span id="privacy-detail" class="sr-only">Sanitizer awaiting metadata</span>
+            <span id="receipt-state" class="sr-only">Waiting</span>
+            <span id="receipt-detail" class="sr-only">No receipt generated</span>
+          </section>
+
+          <section class="panel scenarios" aria-labelledby="scenario-title">
+            <div class="compact-heading">
+              <div><p class="eyebrow">CLICKABLE DEMONSTRATION</p><h2 id="scenario-title">Agent payment scenarios</h2></div>
+              <strong id="action-status" role="status" aria-live="polite">Ready for a payment request</strong>
+            </div>
+            <div class="scenario-grid">
+              <button type="button" class="scenario-card allow-card" data-action="normal" data-scenario="NORMAL_PAYMENT">
+                <span class="scenario-number">1</span><strong>Normal payment</strong>
+                <small>Known recipient<br>10 USDC</small><i aria-hidden="true">&check;</i>
+              </button>
+              <button type="button" class="scenario-card approval-card" data-action="approval" data-scenario="NEW_RECIPIENT">
+                <span class="scenario-number">2</span><strong>First-seen recipient</strong>
+                <small>Permitted but unfamiliar<br>Needs approval</small><i aria-hidden="true">!</i>
+              </button>
+              <button type="button" class="scenario-card block-card" data-action="replay" data-scenario="REPLAY_ATTACK">
+                <span class="scenario-number">3</span><strong>Replay attack</strong>
+                <small>Duplicate request<br>Same nonce</small><i aria-hidden="true">&#8635;</i>
+              </button>
+              <button type="button" class="scenario-card block-card" data-action="attack" data-scenario="COMPOUND_DRAIN">
+                <span class="scenario-number">4</span><strong>Compound drain</strong>
+                <small>Novel recipient<br>High amount + velocity</small><i aria-hidden="true">&#9889;</i>
+              </button>
+            </div>
+          </section>
+
+          <section class="panel transaction-panel" id="transactions" aria-labelledby="transactions-title">
+            <div class="compact-heading">
+              <div><p class="eyebrow">RUNTIME EVIDENCE</p><h2 id="transactions-title">Latest transactions</h2></div>
+              <button type="button" class="text-button" id="open-audit">View full audit log</button>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Time</th><th>Request</th><th>Recipient</th><th>Amount</th><th>Decision</th><th>Reason</th><th>Signing</th><th>Settlement</th></tr></thead>
+                <tbody id="event-list"><tr><td colspan="8" class="empty">Loading runtime events...</td></tr></tbody>
+              </table>
+            </div>
+          </section>
+        </section>
+
+        <aside class="evidence-rail" aria-label="Runtime decision evidence">
+          <section class="panel summary-card">
+            <div class="rail-heading"><h2>Decision summary</h2><span>Current runtime</span></div>
+            <div class="decision-counts">
+              <article class="allow-count"><span>ALLOW</span><strong id="allow-count">0</strong></article>
+              <article class="approval-count"><span>REQUIRE APPROVAL</span><strong id="approval-count">0</strong></article>
+              <article class="block-count"><span>BLOCK</span><strong id="block-count">0</strong></article>
+            </div>
+            <article class="blocked-value">
+              <span>ATTEMPTED VALUE BLOCKED</span>
+              <strong id="protected-value">0 USDC</strong>
+              <small id="blocked-context">Across 0 blocked requests</small>
+            </article>
+          </section>
+
+          <section class="panel wallet-card">
+            <div class="rail-heading"><h2>Wallet status</h2><span>Simulated</span></div>
+            <span>Current balance</span>
+            <strong id="wallet-balance" class="wallet-balance">Loading...</strong>
+            <dl>
+              <div><dt>Last settlement</dt><dd id="last-settlement">None</dd></div>
+              <div><dt>Settlement type</dt><dd id="settlement-type">Simulated</dd></div>
+            </dl>
+            <div class="secured-badge"><span aria-hidden="true">&#10003;</span><div><strong>WALLET BOUNDARY SECURED</strong><small>Only authorized requests reach signing</small></div></div>
+          </section>
+
+          <section class="panel mandate-card" id="mandate">
+            <div class="rail-heading"><h2>Active mandate</h2><span id="mandate-status">ACTIVE</span></div>
+            <h3 id="mandate-heading">Loading policy...</h3>
+            <dl>
+              <div><dt>Maximum payment</dt><dd id="mandate-limit">-</dd></div>
+              <div><dt>Recipient policy</dt><dd id="mandate-mode">-</dd></div>
+              <div><dt>Delegated purpose</dt><dd id="mandate-purpose">-</dd></div>
+              <div><dt>Hard-block list</dt><dd id="mandate-blocked">-</dd></div>
+              <div><dt>Valid until</dt><dd id="mandate-valid-until">-</dd></div>
+            </dl>
+          </section>
+        </aside>
       </div>
-      <p class="hero-copy">Every number and status on this screen is computed from the local gateway processing the demonstration traffic.</p>
-    </section>
 
-    <section class="product-flow" aria-label="SolGuard product position">
-      <article>
-        <span>01 · UNTRUSTED</span>
-        <strong>Autonomous agent</strong>
-        <p>Proposes a payment intent at machine speed.</p>
-      </article>
-      <i aria-hidden="true">→</i>
-      <article class="product-core">
-        <span>02 · ENFORCE</span>
-        <strong>SolGuard gateway</strong>
-        <p>Applies mandate, integrity and behavioural controls before signing.</p>
-      </article>
-      <i aria-hidden="true">→</i>
-      <article>
-        <span>03 · PROTECTED</span>
-        <strong>Wallet boundary</strong>
-        <p>Receives authorization only when the request is allowed.</p>
-      </article>
-    </section>
-
-    <section id="scenarios" class="scenario-section" aria-labelledby="scenario-heading">
-      <div class="section-heading">
-        <div>
-          <p class="section-label">CLICKABLE PRODUCT DEMONSTRATION</p>
-          <h2 id="scenario-heading">Choose what the agent attempts</h2>
+      <section class="panel pipeline-panel" id="pipeline" aria-labelledby="pipeline-title">
+        <div class="compact-heading">
+          <div><p class="eyebrow">AUTOMATED PRE-SIGNING ENFORCEMENT</p><h2 id="pipeline-title">Security pipeline</h2></div>
+          <span>Humans set boundaries. SolGuard enforces them at machine speed.</span>
         </div>
-        <p>Each scenario resets and submits deterministic simulated traffic through the actual Python gateway.</p>
-      </div>
-      <div class="scenario-grid">
-        <button type="button" class="scenario-card allow-scenario" data-action="normal" data-scenario="NORMAL_PAYMENT">
-          <span class="scenario-number">01</span>
-          <span class="scenario-outcome allow">ALLOW</span>
-          <strong>Normal API purchase</strong>
-          <small>Known recipient · 10 USDC · within mandate</small>
-        </button>
-        <button type="button" class="scenario-card approval-scenario" data-action="approval" data-scenario="NEW_RECIPIENT">
-          <span class="scenario-number">02</span>
-          <span class="scenario-outcome approval">APPROVAL</span>
-          <strong>First-seen recipient</strong>
-          <small>Permitted request · unfamiliar destination</small>
-        </button>
-        <button type="button" class="scenario-card block-scenario" data-action="replay" data-scenario="REPLAY_ATTACK">
-          <span class="scenario-number">03</span>
-          <span class="scenario-outcome block">BLOCK</span>
-          <strong>Replay intercepted request</strong>
-          <small>Same request ID and nonce submitted twice</small>
-        </button>
-        <button type="button" class="scenario-card block-scenario" data-action="attack" data-scenario="COMPOUND_DRAIN">
-          <span class="scenario-number">04</span>
-          <span class="scenario-outcome block">BLOCK</span>
-          <strong>Compromised wallet drain</strong>
-          <small>New recipient · high velocity · amount ≥ 2× baseline</small>
-        </button>
-      </div>
-    </section>
-
-    <section class="control-bar" aria-label="Live demonstration controls">
-      <div class="control-copy">
-        <span id="scenario-name">LIVE SCENARIO</span>
-        <strong id="action-status" role="status" aria-live="polite">Ready for a payment request</strong>
-      </div>
-      <div class="actions">
-        <button type="button" class="reset" data-action="reset" aria-label="Reset local demonstration">Reset</button>
-      </div>
-    </section>
-
-    <section id="demo" class="decision-stage" aria-label="Latest pre-signing security proof">
-      <article class="decision-card" aria-live="polite">
-        <div class="decision-card-head">
-          <div>
-            <p class="section-label">LIVE GATEWAY DECISION</p>
-            <span id="decision-request">No request processed</span>
-          </div>
-          <span id="decision-latency" class="latency">NO DATA</span>
+        <div class="pipeline">
+          <article class="pipeline-step" data-pipeline="normalize"><span>1</span><div><strong>Canonical request</strong><small>Waiting</small></div></article><i>&rarr;</i>
+          <article class="pipeline-step" data-pipeline="integrity"><span>2</span><div><strong>Integrity check</strong><small>Waiting</small></div></article><i>&rarr;</i>
+          <article class="pipeline-step" data-pipeline="mandate"><span>3</span><div><strong>Financial mandate</strong><small>Waiting</small></div></article><i>&rarr;</i>
+          <article class="pipeline-step" data-pipeline="behaviour"><span>4</span><div><strong>Behavioural analysis</strong><small>Waiting</small></div></article><i>&rarr;</i>
+          <article class="pipeline-step" data-pipeline="authorization"><span>5</span><div><strong>Authorization</strong><small>Waiting</small></div></article><i>&rarr;</i>
+          <article class="pipeline-step" data-pipeline="wallet"><span>6</span><div><strong>Wallet boundary</strong><small>Waiting</small></div></article>
         </div>
-        <div class="decision-main">
-          <span class="decision-indicator" aria-hidden="true"><i></i></span>
-          <div>
-            <strong id="decision-value" class="decision-value">STANDBY</strong>
-            <p id="decision-amount" class="decision-amount">Waiting for agent intent</p>
-          </div>
-        </div>
-        <p id="decision-copy" class="decision-copy">Run a normal payment or trigger the compromised-agent sequence to create live security evidence.</p>
-        <div id="reason-list" class="reason-list" aria-label="Decision reasons">
-          <span class="reason-chip neutral">NO DECISION YET</span>
-        </div>
-      </article>
+      </section>
 
-      <aside class="proof-panel" aria-label="Enforcement evidence">
-        <div class="proof-heading">
-          <div>
-            <p class="section-label">ENFORCEMENT EVIDENCE</p>
-            <h2>What reached the wallet?</h2>
-          </div>
-          <span class="live-badge"><i aria-hidden="true"></i>LIVE</span>
-        </div>
-        <div class="proof-grid">
-          <article class="proof-item">
-            <span>Wallet boundary</span>
-            <strong id="signer-state">WAITING</strong>
-            <small id="signer-detail">No payment evaluated</small>
-          </article>
-          <article class="proof-item">
-            <span>Settlement</span>
-            <strong id="settlement-state">NONE</strong>
-            <small id="settlement-detail">No settlement reference</small>
-          </article>
-          <article class="proof-item">
-            <span>Safe telemetry</span>
-            <strong id="privacy-state">READY</strong>
-            <small id="privacy-detail">Sanitizer awaiting metadata</small>
-          </article>
-          <article class="proof-item">
-            <span>Decision receipt</span>
-            <strong id="receipt-state">WAITING</strong>
-            <small id="receipt-detail">No receipt generated</small>
-          </article>
-        </div>
-      </aside>
-    </section>
+      <section class="proof-footer" id="capabilities">
+        <strong>Stop the signature. Stop the drain.</strong>
+        <span>Mandates &middot; integrity &middot; behavioural detection &middot; single-use authorization &middot; PII-safe audit receipts</span>
+        <a href="#audit" id="audit">Evidence-backed local demonstration</a>
+      </section>
+    </main>
+  </div>
 
-    <section class="metric-strip" aria-label="Runtime-computed metrics">
-      <article>
-        <span>SIMULATED WALLET BALANCE</span>
-        <strong id="wallet-balance">Loading…</strong>
-        <small>Derived from the settlement adapter</small>
-      </article>
-      <article class="blocked-metric">
-        <span>ATTEMPTED VALUE BLOCKED</span>
-        <strong id="protected-value">Loading…</strong>
-        <small>Sum of gateway-blocked requests</small>
-      </article>
-      <article>
-        <span>GATEWAY DECISIONS</span>
-        <strong id="decision-total">Loading…</strong>
-        <small id="decision-breakdown">Waiting for runtime state</small>
-      </article>
-    </section>
-
-    <section class="mandate" aria-labelledby="mandate-heading">
-      <div>
-        <p class="section-label">ACTIVE FINANCIAL MANDATE</p>
-        <h2 id="mandate-heading">Loading policy…</h2>
-      </div>
-      <dl>
-        <div><dt>Delegated purpose</dt><dd id="mandate-purpose">—</dd></div>
-        <div><dt>Maximum payment</dt><dd id="mandate-limit">—</dd></div>
-        <div><dt>Recipient policy</dt><dd id="mandate-mode">—</dd></div>
-        <div><dt>Hard-block list</dt><dd id="mandate-blocked">—</dd></div>
-      </dl>
-    </section>
-
-    <section id="pipeline" class="pipeline-section" aria-labelledby="pipeline-heading">
-      <div class="section-heading">
-        <div>
-          <p class="section-label">PRE-SIGNING SECURITY PATH</p>
-          <h2 id="pipeline-heading">What happened inside SolGuard</h2>
-        </div>
-        <p>The latest request highlights the exact boundary that allowed, paused or blocked it.</p>
-      </div>
-      <div class="pipeline" aria-label="Gateway security pipeline">
-        <article class="pipeline-step" data-pipeline="normalize">
-          <span>01</span><strong>Canonical request</strong><small>Waiting</small>
-        </article>
-        <i aria-hidden="true">→</i>
-        <article class="pipeline-step" data-pipeline="integrity">
-          <span>02</span><strong>Integrity + nonce</strong><small>Waiting</small>
-        </article>
-        <i aria-hidden="true">→</i>
-        <article class="pipeline-step" data-pipeline="mandate">
-          <span>03</span><strong>Financial mandate</strong><small>Waiting</small>
-        </article>
-        <i aria-hidden="true">→</i>
-        <article class="pipeline-step" data-pipeline="behaviour">
-          <span>04</span><strong>Behaviour rules</strong><small>Waiting</small>
-        </article>
-        <i aria-hidden="true">→</i>
-        <article class="pipeline-step" data-pipeline="authorization">
-          <span>05</span><strong>Authorization</strong><small>Waiting</small>
-        </article>
-        <i aria-hidden="true">→</i>
-        <article class="pipeline-step" data-pipeline="wallet">
-          <span>06</span><strong>Wallet boundary</strong><small>Waiting</small>
-        </article>
-      </div>
-    </section>
-
-    <section id="capabilities" class="capabilities-section" aria-labelledby="capabilities-heading">
-      <div class="section-heading">
-        <div>
-          <p class="section-label">IMPLEMENTED SECURITY CONTROLS</p>
-          <h2 id="capabilities-heading">What is actually in the repository</h2>
-        </div>
-        <p>These are working modules covered by automated tests—not roadmap promises.</p>
-      </div>
-      <div class="capability-grid">
-        <article><span>POLICY</span><strong>Agent Financial Mandates</strong><p>Per-agent spend limit, permitted recipients and a hard-block list.</p></article>
-        <article><span>DETECTION</span><strong>Four explainable rules</strong><p>Amount anomaly, velocity, recipient novelty and compound drain.</p></article>
-        <article><span>INTEGRITY</span><strong>Expiry + replay protection</strong><p>Timestamp validation and atomic per-agent nonce consumption.</p></article>
-        <article><span>AUTHORIZATION</span><strong>Single-use wallet boundary</strong><p>Short-lived authorization bound to the exact canonical request.</p></article>
-        <article><span>PRIVACY</span><strong>PII-safe observability</strong><p>Bounded metadata sanitization before dashboard and audit output.</p></article>
-        <article><span>EVIDENCE</span><strong>Hash-linked audit receipts</strong><p>Stable decision reasons, safe evidence and tamper-evident chaining.</p></article>
-      </div>
-    </section>
-
-    <section id="evidence" class="feed" aria-labelledby="feed-heading">
-      <div class="feed-heading">
-        <div>
-          <p class="section-label">RUNTIME EVIDENCE STREAM</p>
-          <h2 id="feed-heading">Every request. Every decision.</h2>
-        </div>
-        <div class="legend" aria-label="Decision legend">
-          <span><i class="allow" aria-hidden="true"></i>Allowed</span>
-          <span><i class="approval" aria-hidden="true"></i>Approval required</span>
-          <span><i class="block" aria-hidden="true"></i>Blocked</span>
-        </div>
-      </div>
-      <div id="event-list" class="event-list" aria-live="polite">
-        <p class="empty">Loading runtime events…</p>
-      </div>
-    </section>
-
-    <footer>
-      <span>Evidence-backed demonstration · Local simulation only</span>
-      <span id="footer-state">Waiting for gateway state</span>
-    </footer>
-  </main>
+  <dialog id="audit-dialog" class="audit-dialog">
+    <form method="dialog" class="dialog-header">
+      <div><p class="eyebrow">TAMPER-EVIDENT EVIDENCE</p><h2>Audit receipt chain</h2></div>
+      <button value="close" aria-label="Close audit dialog">&times;</button>
+    </form>
+    <div class="audit-status"><span id="audit-chain-state">Checking chain...</span><span id="audit-retained">0 receipts</span></div>
+    <div id="audit-content" class="audit-content"><p>Loading audit receipts...</p></div>
+  </dialog>
 </body>
 </html>

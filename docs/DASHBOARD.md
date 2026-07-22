@@ -1,8 +1,10 @@
-# Live Security Dashboard
+# Autonomous Security Control Plane
 
-The SolGuard dashboard is a stage-facing local demonstration interface backed by the
-running gateway. It does not contain hardcoded transaction results, activity totals,
-invented trust scores, or claimed network settlement.
+The SolGuard control plane is a stage-facing local demonstration interface backed by
+the running gateway. Humans define the mandate and inspect exceptional outcomes; the
+gateway makes routine payment decisions autonomously before the wallet boundary. The
+interface does not contain hardcoded transaction results, activity totals, invented
+trust scores, or claimed network settlement.
 
 ## Run
 
@@ -39,13 +41,14 @@ All traffic is explicitly labelled `SIMULATED`.
 The page is organized so a non-code reviewer can understand the product without opening
 the repository:
 
-1. the agent-to-gateway-to-wallet product position;
+1. the autonomous agent-to-gateway-to-wallet product position;
 2. four clickable decision scenarios covering all three public outcomes;
 3. the latest request and wallet-enforcement proof;
-4. the active financial mandate;
-5. a six-stage security pipeline highlighted from the latest decision;
-6. the six implemented security capabilities; and
-7. the runtime evidence stream.
+4. runtime-derived decision totals and attempted blocked value;
+5. the active financial mandate and simulated wallet state;
+6. a six-stage security pipeline highlighted from the latest decision;
+7. the recent transaction stream; and
+8. an inspectable hash-linked audit receipt chain.
 
 ## Visual proof
 
@@ -74,6 +77,9 @@ UI constructs all untrusted runtime text with `textContent` rather than HTML inj
 
 ## Security boundary
 
-The browser can trigger only the three local scenario operations. It cannot edit a recipient, amount, mandate, wallet balance, or authorization. HTTP errors return generic messages rather than internal exception details.
+The browser can trigger only the four deterministic local scenario operations and a
+local reset. It cannot edit a recipient, amount, mandate, wallet balance, or
+authorization. HTTP errors return generic messages rather than internal exception
+details.
 
 The dashboard store subscribes to the bounded local audit event stream. The browser polls a computed state snapshot, while portable chained receipts remain available from the local `/api/audit` endpoint.

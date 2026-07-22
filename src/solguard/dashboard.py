@@ -74,6 +74,7 @@ class DashboardStore:
                 "policy_mode": (
                     "STRICT_ALLOWLIST" if mandate.allowed_recipients else "OPEN_WITH_HARD_BLOCKS"
                 ),
+                "valid_until": format_timestamp(mandate.expires_at),
             },
             "decision_counts": {
                 "allowed": allowed,
