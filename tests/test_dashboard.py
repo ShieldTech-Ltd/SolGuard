@@ -21,6 +21,7 @@ from solguard.dashboard import (
     DashboardStore,
     DemoRuntime,
     create_dashboard_server,
+    create_seeded_demo_runtime,
 )
 from solguard.gateway import build_simulated_gateway
 from solguard.privacy import MetadataSanitizer
@@ -44,6 +45,7 @@ def test_initial_snapshot_contains_only_computed_empty_state() -> None:
     }
     assert snapshot["events"] == []
     assert snapshot["latest_latency_ms"] is None
+    assert snapshot["active_scenario"] == "READY"
     assert snapshot["value_protected"] == "0"
     assert snapshot["wallet_balance"] == "1000"
     assert snapshot["settlement_type"] == "SIMULATED"
@@ -53,7 +55,9 @@ def test_initial_snapshot_contains_only_computed_empty_state() -> None:
         "asset": "USDC",
         "blocked_recipients": ["blocked-wallet"],
         "max_single_payment": "100",
+        "purpose": "verified API purchase",
         "policy_mode": "OPEN_WITH_HARD_BLOCKS",
+        "valid_until": "2026-07-26T10:00:00Z",
     }
 
 
@@ -74,6 +78,61 @@ def test_normal_action_uses_real_gateway_and_settlement_result() -> None:
     assert event["traffic_type"] == "SIMULATED"
 
 
+def test_stage_runtime_opens_with_one_computed_normal_payment() -> None:
+    snapshot = create_seeded_demo_runtime().snapshot()
+
+    assert snapshot["decision_counts"] == {
+        "allowed": 1,
+        "blocked": 0,
+        "require_approval": 0,
+        "total": 1,
+    }
+    assert snapshot["wallet_balance"] == "990"
+    assert snapshot["active_scenario"] == "NORMAL_PAYMENT"
+    event = cast(list[dict[str, JsonValue]], snapshot["events"])[0]
+    assert event["decision"] == "ALLOW"
+    assert event["signing_state"] == "SIGNED_SIMULATED"
+
+
+def test_first_seen_recipient_scenario_requires_approval_without_signing() -> None:
+    snapshot = runtime().run_approval_scenario()
+
+    assert snapshot["active_scenario"] == "NEW_RECIPIENT"
+    assert snapshot["decision_counts"] == {
+        "allowed": 3,
+        "blocked": 0,
+        "require_approval": 1,
+        "total": 4,
+    }
+    events = cast(list[dict[str, JsonValue]], snapshot["events"])
+    latest = events[0]
+    assert latest["recipient"] == "market-data-api"
+    assert latest["decision"] == "REQUIRE_APPROVAL"
+    assert latest["reason_codes"] == ["DETECTION_RECIPIENT_NOVEL"]
+    assert latest["signing_state"] == "NOT_SIGNED"
+    assert latest["settlement_reference"] is None
+
+
+def test_replayed_request_scenario_allows_once_then_blocks_exact_replay() -> None:
+    snapshot = runtime().run_replay_scenario()
+
+    assert snapshot["active_scenario"] == "REPLAY_ATTACK"
+    assert snapshot["decision_counts"] == {
+        "allowed": 1,
+        "blocked": 1,
+        "require_approval": 0,
+        "total": 2,
+    }
+    events = cast(list[dict[str, JsonValue]], snapshot["events"])
+    replayed, original = events
+    assert replayed["request_id"] == original["request_id"]
+    assert original["decision"] == "ALLOW"
+    assert replayed["decision"] == "BLOCK"
+    assert replayed["reason_codes"] == ["REQUEST_REPLAYED"]
+    assert replayed["signing_state"] == "NOT_SIGNED"
+    assert replayed["settlement_reference"] is None
+
+
 def test_attack_action_seeds_baseline_then_blocks_compound_drain() -> None:
     snapshot = runtime().run_attack()
 
@@ -85,6 +144,7 @@ def test_attack_action_seeds_baseline_then_blocks_compound_drain() -> None:
     }
     assert snapshot["wallet_balance"] == "970"
     assert snapshot["value_protected"] == "25"
+    assert snapshot["active_scenario"] == "COMPOUND_DRAIN"
     events = cast(list[dict[str, JsonValue]], snapshot["events"])
     latest = events[0]
     assert latest["decision"] == "BLOCK"
@@ -118,6 +178,7 @@ def test_reset_restores_actual_empty_runtime_state() -> None:
     assert cast(dict[str, int], snapshot["decision_counts"])["total"] == 0
     assert snapshot["wallet_balance"] == "1000"
     assert snapshot["value_protected"] == "0"
+    assert snapshot["active_scenario"] == "READY"
 
 
 def test_normal_action_after_attack_does_not_count_as_clean_seed() -> None:
@@ -206,9 +267,10 @@ def post(url: str) -> tuple[int, dict[str, JsonValue]]:
 @pytest.mark.parametrize(
     ("path", "content_type", "marker"),
     [
-        ("/", "text/html", "SolGuard"),
+        ("/", "text/html", "decision-value"),
         ("/styles.css", "text/css", "--background"),
-        ("/app.js", "text/javascript", "renderState"),
+        ("/app.js", "text/javascript", "renderDecisionSpotlight"),
+        ("/favicon.svg", "image/svg+xml", "#27b7ff"),
     ],
 )
 def test_server_delivers_dashboard_assets(path: str, content_type: str, marker: str) -> None:
@@ -223,18 +285,60 @@ def test_server_delivers_dashboard_assets(path: str, content_type: str, marker: 
     assert "default-src 'self'" in headers["Content-Security-Policy"]
 
 
+def test_stage_dashboard_packages_visible_enforcement_proof() -> None:
+    with running_server(runtime()) as base:
+        _, html, _ = get(f"{base}/")
+        _, javascript, _ = get(f"{base}/app.js")
+
+    assert "Stop the signature" in html
+    assert "AUTONOMOUS SECURITY CONTROL PLANE" in html
+    assert "ATTEMPTED VALUE BLOCKED" in html
+    assert 'data-action="approval"' in html
+    assert 'data-action="replay"' in html
+    assert 'data-pipeline="integrity"' in html
+    assert 'id="capabilities"' in html
+    assert 'id="signer-state"' in html
+    assert 'id="settlement-state"' in html
+    assert 'id="privacy-state"' in html
+    assert 'id="receipt-state"' in html
+    assert 'id="audit-dialog"' in html
+    assert 'id="guided-demo"' in html
+    assert 'id="start-guided-demo"' in html
+    assert 'data-guide-action="attack"' in html
+    assert "LIVE SECURITY ENGINE" in html
+    assert "SIMULATED SETTLEMENT" in html
+    assert "No signing authorization reached the wallet" in javascript
+    assert "No settlement reference generated" in javascript
+    assert "redactionEvidence" in javascript
+    assert "renderPipeline" in javascript
+    assert "renderAudit" in javascript
+    assert "executeGuideScenario" in javascript
+    assert "guideStageContent" in javascript
+    assert "Guided replay of one live gateway result" in html
+    assert "REQUEST_REPLAYED" in javascript
+
+
 def test_server_state_and_scenario_endpoints_return_runtime_data() -> None:
     with running_server(runtime()) as base:
         status, initial, _ = get(f"{base}/api/state")
         normal_status, normal = post(f"{base}/api/demo/normal")
         audit_status, audit_body, _ = get(f"{base}/api/audit")
+        approval_status, approval = post(f"{base}/api/demo/approval")
+        replay_status, replay = post(f"{base}/api/demo/replay")
         attack_status, attack = post(f"{base}/api/demo/attack")
         reset_status, reset = post(f"{base}/api/demo/reset")
 
     assert status == 200
     assert json.loads(initial)["decision_counts"]["total"] == 0
-    assert normal_status == attack_status == reset_status == 200
+    assert normal_status == approval_status == replay_status == attack_status == reset_status == 200
     assert cast(dict[str, int], normal["decision_counts"])["total"] == 1
+    normal_event = cast(list[dict[str, JsonValue]], normal["events"])[0]
+    assert str(normal_event["request_digest"]).startswith("sha256:")
+    assert str(normal_event["policy_version"]).startswith("sha256:")
+    assert approval["active_scenario"] == "NEW_RECIPIENT"
+    assert cast(dict[str, int], approval["decision_counts"])["require_approval"] == 1
+    assert replay["active_scenario"] == "REPLAY_ATTACK"
+    assert cast(dict[str, int], replay["decision_counts"])["blocked"] == 1
     audit = json.loads(audit_body)
     assert audit_status == 200
     assert audit["retained"] == 1
@@ -263,6 +367,18 @@ class BrokenRuntime:
         raise RuntimeError("private failure")
 
     def run_attack(self) -> dict[str, JsonValue]:
+        return {}
+
+    def run_normal_scenario(self) -> dict[str, JsonValue]:
+        raise RuntimeError("private failure")
+
+    def run_approval_scenario(self) -> dict[str, JsonValue]:
+        return {}
+
+    def run_replay_scenario(self) -> dict[str, JsonValue]:
+        return {}
+
+    def run_attack_scenario(self) -> dict[str, JsonValue]:
         return {}
 
     def reset(self) -> dict[str, JsonValue]:

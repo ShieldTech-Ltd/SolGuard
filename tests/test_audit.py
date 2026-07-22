@@ -97,7 +97,9 @@ def test_dashboard_dict_contains_safe_runtime_fields() -> None:
 
     assert dashboard["decision"] == "ALLOW"
     assert dashboard["receipt_digest"] == event.receipt_digest
+    assert dashboard["request_digest"] == event.payload["request_digest"]
     assert dashboard["request_id"] == "req_01"
+    assert dashboard["policy_version"] == event.payload["policy_version"]
     assert dashboard["traffic_type"] == "SIMULATED"
 
 

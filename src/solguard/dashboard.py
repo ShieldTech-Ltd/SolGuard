@@ -70,9 +70,11 @@ class DashboardStore:
                 "asset": mandate.asset,
                 "blocked_recipients": list(mandate.blocked_recipients),
                 "max_single_payment": format_amount(mandate.max_single_payment),
+                "purpose": mandate.purpose,
                 "policy_mode": (
                     "STRICT_ALLOWLIST" if mandate.allowed_recipients else "OPEN_WITH_HARD_BLOCKS"
                 ),
+                "valid_until": format_timestamp(mandate.expires_at),
             },
             "decision_counts": {
                 "allowed": allowed,
@@ -94,6 +96,7 @@ class DemoRuntime:
     AGENT_ID = "demo-agent"
     MANDATE_ID = "demo-mandate"
     NORMAL_RECIPIENT = "weather-api"
+    APPROVAL_RECIPIENT = "market-data-api"
     ATTACK_RECIPIENT = "attacker-wallet"
 
     def __init__(
@@ -117,16 +120,19 @@ class DemoRuntime:
         """Return the current computed state without exposing mutable internals."""
 
         with self._lock:
-            return self._store.snapshot(
+            snapshot = self._store.snapshot(
                 mandate=self._mandate,
                 wallet_balance=self._settlement.balances[self.AGENT_ID],
             )
+            snapshot["active_scenario"] = self._active_scenario
+            return snapshot
 
     def run_normal(self) -> dict[str, JsonValue]:
         """Run one normal payment through the real local gateway."""
 
         with self._lock:
             self._process_normal()
+            self._active_scenario = "NORMAL_PAYMENT"
             return self.snapshot()
 
     def run_attack(self) -> dict[str, JsonValue]:
@@ -137,7 +143,53 @@ class DemoRuntime:
                 self._process_normal()
             self._observed_at += timedelta(seconds=11)
             self._process_attack_burst()
+            self._active_scenario = "COMPOUND_DRAIN"
             return self.snapshot()
+
+    def run_normal_scenario(self) -> dict[str, JsonValue]:
+        """Reset and demonstrate one ordinary allowed payment."""
+
+        with self._lock:
+            self._reset_locked()
+            return self.run_normal()
+
+    def run_approval_scenario(self) -> dict[str, JsonValue]:
+        """Reset and demonstrate a first-seen recipient requiring approval."""
+
+        with self._lock:
+            self._reset_locked()
+            while self._clean_seed_count < 3:
+                self._process_normal()
+            self._observed_at += timedelta(seconds=11)
+            self._process(
+                recipient=self.APPROVAL_RECIPIENT,
+                amount="10",
+                metadata={"scenario": "first-seen-recipient"},
+            )
+            self._active_scenario = "NEW_RECIPIENT"
+            return self.snapshot()
+
+    def run_replay_scenario(self) -> dict[str, JsonValue]:
+        """Reset and demonstrate an exact request replay failing closed."""
+
+        with self._lock:
+            self._reset_locked()
+            request = self._build_request(
+                recipient=self.NORMAL_RECIPIENT,
+                amount="10",
+                metadata={"scenario": "replayed-request"},
+            )
+            self._evaluate_and_publish(request)
+            self._evaluate_and_publish(request)
+            self._active_scenario = "REPLAY_ATTACK"
+            return self.snapshot()
+
+    def run_attack_scenario(self) -> dict[str, JsonValue]:
+        """Reset and demonstrate the complete compound-drain sequence."""
+
+        with self._lock:
+            self._reset_locked()
+            return self.run_attack()
 
     def run_demo_sequence(self) -> dict[str, JsonValue]:
         """Run baseline, attack, reset, and recovery as deterministic checkpoints."""
@@ -186,6 +238,7 @@ class DemoRuntime:
         self._observed_at = start.astimezone(UTC)
         self._sequence = 0
         self._clean_seed_count = 0
+        self._active_scenario = "READY"
         self._mandate = AgentMandate.from_dict(
             {
                 "mandate_id": self.MANDATE_ID,
@@ -244,8 +297,24 @@ class DemoRuntime:
         amount: str,
         metadata: dict[str, JsonValue],
     ) -> GatewayOutcome:
+        request = self._build_request(
+            recipient=recipient,
+            amount=amount,
+            metadata=metadata,
+        )
+        return self._evaluate_and_publish(request)
+
+    def _build_request(
+        self,
+        *,
+        recipient: str,
+        amount: str,
+        metadata: dict[str, JsonValue],
+    ) -> PaymentRequest:
+        """Build one canonical simulated request for a live scenario."""
+
         self._sequence += 1
-        request = PaymentRequest.from_dict(
+        return PaymentRequest.from_dict(
             {
                 "request_id": f"demo-{self._sequence:04d}",
                 "agent_id": self.AGENT_ID,
@@ -260,6 +329,10 @@ class DemoRuntime:
                 "metadata": metadata,
             }
         )
+
+    def _evaluate_and_publish(self, request: PaymentRequest) -> GatewayOutcome:
+        """Evaluate a request, publish its safe receipt, and advance demo time."""
+
         outcome = self._gateway.process(request)
         sanitized = self._sanitizer.sanitize_payment(request)
         self._audit_stream.publish(
@@ -272,6 +345,14 @@ class DemoRuntime:
         return outcome
 
 
+def create_seeded_demo_runtime() -> DemoRuntime:
+    """Open the stage dashboard with one genuine gateway-processed payment."""
+
+    runtime = DemoRuntime()
+    runtime.run_normal()
+    return runtime
+
+
 class DashboardRuntime(Protocol):
     """Operations exposed to the local HTTP handler."""
 
@@ -280,6 +361,14 @@ class DashboardRuntime(Protocol):
     def run_normal(self) -> dict[str, JsonValue]: ...
 
     def run_attack(self) -> dict[str, JsonValue]: ...
+
+    def run_normal_scenario(self) -> dict[str, JsonValue]: ...
+
+    def run_approval_scenario(self) -> dict[str, JsonValue]: ...
+
+    def run_replay_scenario(self) -> dict[str, JsonValue]: ...
+
+    def run_attack_scenario(self) -> dict[str, JsonValue]: ...
 
     def reset(self) -> dict[str, JsonValue]: ...
 
@@ -307,6 +396,7 @@ class DashboardRequestHandler(BaseHTTPRequestHandler):
     _ASSETS: ClassVar[dict[str, tuple[str, str]]] = {
         "/": ("index.html", "text/html; charset=utf-8"),
         "/app.js": ("app.js", "text/javascript; charset=utf-8"),
+        "/favicon.svg": ("favicon.svg", "image/svg+xml"),
         "/styles.css": ("styles.css", "text/css; charset=utf-8"),
     }
 
@@ -329,8 +419,10 @@ class DashboardRequestHandler(BaseHTTPRequestHandler):
     def do_POST(self) -> None:
         path = urlparse(self.path).path
         actions: dict[str, Callable[[], dict[str, JsonValue]]] = {
-            "/api/demo/attack": self.server.runtime.run_attack,
-            "/api/demo/normal": self.server.runtime.run_normal,
+            "/api/demo/approval": self.server.runtime.run_approval_scenario,
+            "/api/demo/attack": self.server.runtime.run_attack_scenario,
+            "/api/demo/normal": self.server.runtime.run_normal_scenario,
+            "/api/demo/replay": self.server.runtime.run_replay_scenario,
             "/api/demo/reset": self.server.runtime.reset,
         }
         action = actions.get(path)
@@ -400,7 +492,7 @@ def main(argv: Sequence[str] | None = None) -> int:  # pragma: no cover - manual
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", default=8765, type=int)
     args = parser.parse_args(argv)
-    server = create_dashboard_server(DemoRuntime(), host=args.host, port=args.port)
+    server = create_dashboard_server(create_seeded_demo_runtime(), host=args.host, port=args.port)
     print(f"SolGuard dashboard: http://{args.host}:{args.port}")
     try:
         server.serve_forever()
