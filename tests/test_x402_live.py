@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
 from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 from types import SimpleNamespace
@@ -13,9 +14,11 @@ from solders.keypair import Keypair
 import solguard.x402_live as live_module
 from solguard.authorization import AuthorizationRejected, WalletAuthorizationGuard
 from solguard.contracts import Decision, PaymentRequest, ReasonCode, SigningAuthorization
+from solguard.devnet_rpc import DevnetConfirmationError, DevnetConfirmationEvidence
 from solguard.settlement import SettlementFailureKind, SettlementUnavailable
 from solguard.x402 import (
     X402_SOLANA_DEVNET_NETWORK,
+    X402_SOLANA_DEVNET_USDC_MINT,
     X402PaymentRequirement,
     X402ProtocolError,
     parse_payment_required_header,
@@ -89,6 +92,7 @@ class FakeExecutor:
         result_amount: Decimal | None = None,
         result_recipient: str | None = None,
         signature: str = "devnet-signature",
+        confirmation_overrides: dict[str, object] | None = None,
     ) -> None:
         self._payer = payer
         self._result_payer = result_payer
@@ -96,6 +100,7 @@ class FakeExecutor:
         self._result_amount = result_amount
         self._result_recipient = result_recipient
         self._signature = signature
+        self._confirmation_overrides = confirmation_overrides or {}
         self._calls = 0
 
     @property
@@ -125,7 +130,37 @@ class FakeExecutor:
             recipient=self._result_recipient or request.recipient,
             amount=self._result_amount if self._result_amount is not None else parsed.amount,
             facilitator=DEFAULT_X402_FACILITATOR_URL,
+            confirmation=replace(
+                confirmation_evidence(
+                    signature=signature,
+                    payer=self._result_payer or self._payer,
+                    recipient=self._result_recipient or request.recipient,
+                    amount_atomic=parsed.amount_atomic,
+                ),
+                **cast(Any, self._confirmation_overrides),
+            ),
         )
+
+
+def confirmation_evidence(
+    *,
+    signature: str = "devnet-signature",
+    payer: str = "payer-address",
+    recipient: str = "recipient",
+    amount_atomic: str = "1000",
+) -> DevnetConfirmationEvidence:
+    return DevnetConfirmationEvidence(
+        transaction_signature=signature,
+        confirmation_status="confirmed",
+        slot=123,
+        token_mint=X402_SOLANA_DEVNET_USDC_MINT,
+        source_owner=payer,
+        source_token_account="source-token-account",
+        destination_owner=recipient,
+        destination_token_account="destination-token-account",
+        source_delta_atomic=f"-{amount_atomic}",
+        destination_delta_atomic=amount_atomic,
+    )
 
 
 def test_live_result_contains_only_safe_confirmed_evidence() -> None:
@@ -133,7 +168,8 @@ def test_live_result_contains_only_safe_confirmed_evidence() -> None:
 
     payload = result.to_dict()
 
-    assert payload["status"] == "CONFIRMED_DEVNET"
+    assert payload["status"] == "CONFIRMED_DEVNET_RPC"
+    assert cast(dict[str, object], payload["on_chain_confirmation"])["slot"] == 123
     assert payload["settlement_type"] == X402_DEVNET_LIVE_SETTLEMENT_TYPE
     assert payload["transaction_signature"] == "devnet-signature"
     assert PRIVATE_KEY_ENV not in str(payload)
@@ -179,6 +215,13 @@ def test_live_boundary_rejects_request_not_bound_to_requirement() -> None:
         FakeExecutor(result_amount=Decimal("2")),
         FakeExecutor(result_payer="wrong-payer"),
         FakeExecutor(signature=""),
+        FakeExecutor(confirmation_overrides={"transaction_signature": "wrong"}),
+        FakeExecutor(confirmation_overrides={"network": "solana:wrong"}),
+        FakeExecutor(confirmation_overrides={"token_mint": "wrong"}),
+        FakeExecutor(confirmation_overrides={"source_owner": "wrong"}),
+        FakeExecutor(confirmation_overrides={"destination_owner": "wrong"}),
+        FakeExecutor(confirmation_overrides={"destination_delta_atomic": "999"}),
+        FakeExecutor(confirmation_overrides={"source_delta_atomic": "-999"}),
     ],
 )
 def test_live_boundary_rejects_inconsistent_facilitator_evidence(
@@ -203,11 +246,13 @@ def test_official_executor_validates_configuration_and_environment(
 ) -> None:
     key = private_key()
     expected_address = str(Keypair.from_base58_string(key).pubkey())
-    executor = OfficialX402DevnetExecutor(private_key=key)
+    injected_confirmer = FakeConfirmer()
+    executor = OfficialX402DevnetExecutor(private_key=key, confirmer=injected_confirmer)
 
     assert executor.payer_address == expected_address
     assert executor.calls == 0
     assert executor.facilitator_url == DEFAULT_X402_FACILITATOR_URL
+    assert executor._confirmer is injected_confirmer
 
     monkeypatch.setenv(PRIVATE_KEY_ENV, key)
     monkeypatch.setenv(FACILITATOR_ENV, "https://facilitator.example.test/x402")
@@ -245,7 +290,7 @@ def test_official_executor_rejects_unsafe_configuration(
             staticmethod(lambda _key: "payer"),
         )
     with pytest.raises(ValueError, match=message):
-        OfficialX402DevnetExecutor(**kwargs)
+        OfficialX402DevnetExecutor(**cast(Any, kwargs))
 
 
 def test_https_origin_rejects_empty_or_oversized_value() -> None:
@@ -404,7 +449,39 @@ def execute_fixture(
     )
     monkeypatch.setattr(executor, "_official_client", lambda: FakeClient(payload=payload))
     monkeypatch.setattr(executor, "_official_facilitator", lambda: facilitator)
+    monkeypatch.setattr(executor, "_confirmer", FakeConfirmer())
     return facilitator
+
+
+class FakeConfirmer:
+    def __init__(self, error: Exception | None = None) -> None:
+        self._error = error
+        self.calls = 0
+
+    def confirm(
+        self,
+        *,
+        transaction_signature: str,
+        expected_mint: str,
+        expected_source_owner: str,
+        expected_destination_owner: str,
+        expected_amount_atomic: str,
+    ) -> DevnetConfirmationEvidence:
+        self.calls += 1
+        if self._error is not None:
+            raise self._error
+        return DevnetConfirmationEvidence(
+            transaction_signature=transaction_signature,
+            confirmation_status="confirmed",
+            slot=123,
+            token_mint=expected_mint,
+            source_owner=expected_source_owner,
+            source_token_account="source-token-account",
+            destination_owner=expected_destination_owner,
+            destination_token_account="destination-token-account",
+            source_delta_atomic=f"-{expected_amount_atomic}",
+            destination_delta_atomic=expected_amount_atomic,
+        )
 
 
 def test_official_executor_uses_sdk_verify_and_settle(
@@ -466,6 +543,24 @@ def test_official_executor_preserves_settlement_unavailable(
         executor.execute(parsed, payment(parsed))
 
     assert caught.value is unavailable
+
+
+def test_official_executor_requires_independent_rpc_confirmation(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    executor = OfficialX402DevnetExecutor(private_key=private_key())
+    parsed = requirement()
+    execute_fixture(executor, parsed, monkeypatch=monkeypatch)
+    monkeypatch.setattr(
+        executor,
+        "_confirmer",
+        FakeConfirmer(DevnetConfirmationError("RPC unavailable")),
+    )
+
+    with pytest.raises(SettlementUnavailable) as caught:
+        executor.execute(parsed, payment(parsed))
+
+    assert caught.value.kind is SettlementFailureKind.INVALID_RESPONSE
 
 
 def test_official_executor_builds_real_optional_sdk_objects() -> None:

@@ -149,7 +149,7 @@ The protocol-independent contracts, simple mandate policy, four documented detec
 | Deterministic simulated settlement | Implemented and tested |
 | Metadata sanitizer | Implemented and tested |
 | Pay.sh sandbox adapter | Implemented, tested, and exercised against the official sandbox |
-| x402 v2 adapter | Solana-devnet mapping and pre-signing simulation implemented and tested; opt-in live devnet executor available, with no committed transaction claim |
+| x402 v2 adapter | Solana-devnet mapping, pre-signing simulation, opt-in official-SDK executor, and independent RPC confirmation implemented and tested; no committed transaction claim |
 | Live dashboard | Implemented and tested |
 | Audit receipts and local event stream | Implemented and tested |
 | Deterministic end-to-end demo command | Implemented and verified in consecutive clean processes |
@@ -251,7 +251,8 @@ An optional official-SDK path can submit a real x402 USDC payment on Solana devn
 It requires disposable devnet credentials and an explicit confirmation flag; the base
 install and deterministic demo do not depend on it. Follow the
 [real devnet demonstration guide](docs/X402_LIVE_DEVNET.md) and describe a transaction
-as real only after its returned signature is independently visible on Solana Explorer.
+as real only after RPC confirms its exact token-account balance deltas. Explorer is a
+presentation link, not the authoritative confirmation source.
 
 ## Build order
 
