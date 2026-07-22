@@ -174,6 +174,8 @@ class AuditEventStream:
         outcome: GatewayOutcome,
         mandate: AgentMandate,
         sanitized_metadata: SanitizedMetadata,
+        signing_state: str | None = None,
+        traffic_type: str = "SIMULATED",
     ) -> AuditEvent:
         """Publish one sanitized event created exclusively from runtime results."""
 
@@ -185,6 +187,8 @@ class AuditEventStream:
                 outcome=outcome,
                 mandate=mandate,
                 sanitized_metadata=sanitized_metadata,
+                signing_state=signing_state,
+                traffic_type=traffic_type,
             )
             event = AuditEvent.create(
                 payload,
@@ -258,6 +262,8 @@ class AuditEventStream:
         outcome: GatewayOutcome,
         mandate: AgentMandate,
         sanitized_metadata: SanitizedMetadata,
+        signing_state: str | None,
+        traffic_type: str,
     ) -> dict[str, JsonValue]:
         settlement_reference = (
             outcome.settlement.settlement_reference if outcome.settlement is not None else None
@@ -279,10 +285,9 @@ class AuditEventStream:
             "schema_version": AUDIT_SCHEMA_VERSION,
             "sequence": sequence,
             "settlement_reference": settlement_reference,
-            "signing_state": (
-                "SIGNED_SIMULATED" if outcome.settlement is not None else "NOT_SIGNED"
-            ),
-            "traffic_type": "SIMULATED",
+            "signing_state": signing_state
+            or ("SIGNED_SIMULATED" if outcome.settlement is not None else "NOT_SIGNED"),
+            "traffic_type": traffic_type,
         }
 
 
