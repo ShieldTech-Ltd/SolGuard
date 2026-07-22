@@ -189,6 +189,10 @@ receipt. The manual Next/Back controls and optional auto-play reveal one result 
 by the running gateway. Security decisions are live local computations; settlement is
 labelled simulation unless separate verified devnet evidence exists.
 
+For an optional public review deployment, use the checked-in Render Blueprint and follow
+the [hosted demonstration guide](docs/DEPLOYMENT.md). The hosted fallback requires no
+wallet credentials and continues to label settlement as simulated.
+
 After installing the official Pay CLI, attempt one external ephemeral-wallet sandbox purchase through the same gateway:
 
 ```bash
@@ -248,6 +252,8 @@ This is an early product thesis, not evidence of existing customers, revenue, or
 - [Threat model](docs/THREAT_MODEL.md)
 - [Metadata sanitization](docs/PRIVACY.md)
 - [Local security dashboard](docs/DASHBOARD.md)
+- [Hosted demonstration](docs/DEPLOYMENT.md)
+- [Judge demonstration runbook](docs/JUDGE_RUNBOOK.md)
 - [Audit receipts and local event stream](docs/AUDIT.md)
 - [Request integrity and replay protection](docs/INTEGRITY.md)
 - [Single-use wallet authorization](docs/AUTHORIZATION.md)

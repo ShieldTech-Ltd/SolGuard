@@ -283,6 +283,25 @@ def test_server_delivers_dashboard_assets(path: str, content_type: str, marker: 
     assert headers["Cache-Control"] == "no-store"
     assert headers["X-Content-Type-Options"] == "nosniff"
     assert "default-src 'self'" in headers["Content-Security-Policy"]
+    assert "frame-ancestors 'none'" in headers["Content-Security-Policy"]
+    assert headers["Cross-Origin-Resource-Policy"] == "same-origin"
+    assert headers["Permissions-Policy"] == "camera=(), microphone=(), geolocation=()"
+    assert headers["Referrer-Policy"] == "no-referrer"
+    assert headers["X-Frame-Options"] == "DENY"
+    assert headers["Server"].strip() == "SolGuard"
+
+
+def test_server_exposes_dependency_free_health_check() -> None:
+    with running_server(runtime()) as base:
+        status, body, headers = get(f"{base}/healthz")
+
+    assert status == 200
+    assert json.loads(body) == {
+        "service": "solguard-dashboard",
+        "settlement": "simulated",
+        "status": "ok",
+    }
+    assert headers["Cache-Control"] == "no-store"
 
 
 def test_stage_dashboard_packages_visible_enforcement_proof() -> None:
