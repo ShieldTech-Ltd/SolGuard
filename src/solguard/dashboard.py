@@ -392,6 +392,8 @@ class DashboardRequestHandler(BaseHTTPRequestHandler):
     """Serve static dashboard assets and local scenario endpoints."""
 
     server: DashboardServer
+    server_version = "SolGuard"
+    sys_version = ""
 
     _ASSETS: ClassVar[dict[str, tuple[str, str]]] = {
         "/": ("index.html", "text/html; charset=utf-8"),
@@ -402,6 +404,15 @@ class DashboardRequestHandler(BaseHTTPRequestHandler):
 
     def do_GET(self) -> None:
         path = urlparse(self.path).path
+        if path == "/healthz":
+            self._send_json(
+                {
+                    "service": "solguard-dashboard",
+                    "settlement": "simulated",
+                    "status": "ok",
+                }
+            )
+            return
         if path == "/api/state":
             self._send_json(self.server.runtime.snapshot())
             return
@@ -469,7 +480,15 @@ class DashboardRequestHandler(BaseHTTPRequestHandler):
         self.send_header("Content-Length", str(len(body)))
         self.send_header("Cache-Control", "no-store")
         self.send_header("X-Content-Type-Options", "nosniff")
-        self.send_header("Content-Security-Policy", "default-src 'self'; connect-src 'self'")
+        self.send_header(
+            "Content-Security-Policy",
+            "default-src 'self'; base-uri 'none'; connect-src 'self'; "
+            "form-action 'none'; frame-ancestors 'none'; object-src 'none'",
+        )
+        self.send_header("Cross-Origin-Resource-Policy", "same-origin")
+        self.send_header("Permissions-Policy", "camera=(), microphone=(), geolocation=()")
+        self.send_header("Referrer-Policy", "no-referrer")
+        self.send_header("X-Frame-Options", "DENY")
         self.end_headers()
         self.wfile.write(body)
 
