@@ -32,6 +32,7 @@ dependencies = [
 
 [project.scripts]
 solguard-api = "solguard.autonomous_api:main"
+solguard-autonomous = "solguard.autonomous_runner:main"
 solguard-dashboard = "solguard.dashboard:main"
 solguard-demo = "solguard.demo:main"
 solguard-paysh = "solguard.paysh:main"

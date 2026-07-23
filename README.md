@@ -191,6 +191,18 @@ uv run solguard-api --config ./autonomous-api.json
 See the [autonomous payment-intent API guide](docs/AUTONOMOUS_API.md) for the public-key
 configuration, Ed25519 signing contract, quarantine semantics, and trust boundary.
 
+Run the deterministic headless agent demonstration (no dashboard or external funds required):
+
+```bash
+uv run solguard-autonomous
+```
+
+The command prints one machine-readable JSON report. Its wallet balance, decisions, counters,
+and settlement references are computed during the run and explicitly labelled
+`DETERMINISTIC_SIMULATION`; they are not blockchain claims. See the
+[autonomous security runner guide](docs/AUTONOMOUS_RUNNER.md) for the exact scenario and trust
+boundary.
+
 Open `http://127.0.0.1:8765`. Select **Start guided demo** for an eight-step,
 judge-facing walkthrough of a payment intent, canonical request, integrity check,
 financial mandate, behavioural analysis, authorization, wallet outcome, and hash-linked
