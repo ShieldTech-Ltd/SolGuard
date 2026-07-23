@@ -33,6 +33,7 @@ dependencies = [
 [project.scripts]
 solguard-api = "solguard.autonomous_api:main"
 solguard-autonomous = "solguard.autonomous_runner:main"
+solguard-security-proof = "solguard.security_proof:main"
 solguard-dashboard = "solguard.dashboard:main"
 solguard-demo = "solguard.demo:main"
 solguard-paysh = "solguard.paysh:main"
@@ -54,7 +55,7 @@ dev = [
 ]
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/solguard"]
+packages = ["src/solguard", "src/solguard_demo_reference"]
 
 [tool.pytest.ini_options]
 addopts = [

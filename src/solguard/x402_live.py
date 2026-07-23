@@ -26,6 +26,12 @@ from solguard.contracts import (
     format_timestamp,
 )
 from solguard.detection import BehaviourEngine
+from solguard.devnet_rpc import (
+    DevnetConfirmationError,
+    DevnetConfirmationEvidence,
+    HttpSolanaRpcTransport,
+    SolanaDevnetConfirmer,
+)
 from solguard.gateway import PaymentGateway
 from solguard.policy import MandatePolicyEngine
 from solguard.settlement import SettlementFailureKind, SettlementResult, SettlementUnavailable
@@ -61,6 +67,7 @@ class X402LiveSettlementResult(SettlementResult):
     recipient: str
     amount: Decimal
     facilitator: str
+    confirmation: DevnetConfirmationEvidence
 
     def to_dict(self) -> dict[str, JsonValue]:
         return {
@@ -68,12 +75,13 @@ class X402LiveSettlementResult(SettlementResult):
             "asset": "USDC",
             "explorer_url": self.explorer_url,
             "facilitator": self.facilitator,
+            "on_chain_confirmation": self.confirmation.to_dict(),
             "network": self.network,
             "payer": self.payer,
             "recipient": self.recipient,
             "settlement_reference": self.settlement_reference,
             "settlement_type": X402_DEVNET_LIVE_SETTLEMENT_TYPE,
-            "status": "CONFIRMED_DEVNET",
+            "status": "CONFIRMED_DEVNET_RPC",
             "transaction_signature": self.transaction_signature,
         }
 
@@ -89,6 +97,20 @@ class X402LiveExecutor(Protocol):
         requirement: X402PaymentRequirement,
         request: PaymentRequest,
     ) -> X402LiveSettlementResult: ...
+
+
+class DevnetConfirmer(Protocol):
+    """Independent RPC confirmation boundary required after facilitator settlement."""
+
+    def confirm(
+        self,
+        *,
+        transaction_signature: str,
+        expected_mint: str,
+        expected_source_owner: str,
+        expected_destination_owner: str,
+        expected_amount_atomic: str,
+    ) -> DevnetConfirmationEvidence: ...
 
 
 class X402LiveDemoExecutor(X402LiveExecutor, Protocol):
@@ -133,6 +155,13 @@ class X402DevnetLiveSettlement:
             or result.amount != request.amount
             or result.payer != self._executor.payer_address
             or not result.transaction_signature
+            or result.confirmation.transaction_signature != result.transaction_signature
+            or result.confirmation.network != self._requirement.network
+            or result.confirmation.token_mint != self._requirement.asset_mint
+            or result.confirmation.source_owner != result.payer
+            or result.confirmation.destination_owner != result.recipient
+            or result.confirmation.destination_delta_atomic != self._requirement.amount_atomic
+            or result.confirmation.source_delta_atomic != f"-{self._requirement.amount_atomic}"
         ):
             raise SettlementUnavailable(
                 SettlementFailureKind.INVALID_RESPONSE,
@@ -150,11 +179,13 @@ class OfficialX402DevnetExecutor:
         private_key: str,
         facilitator_url: str = DEFAULT_X402_FACILITATOR_URL,
         rpc_url: str = DEFAULT_SOLANA_DEVNET_RPC_URL,
+        confirmer: DevnetConfirmer | None = None,
     ) -> None:
         if not private_key or private_key != private_key.strip():
             raise ValueError(f"{PRIVATE_KEY_ENV} must be a non-empty trimmed value")
         self._facilitator_url = _https_origin(facilitator_url, field_name="facilitator_url")
         self._rpc_url = _https_origin(rpc_url, field_name="rpc_url")
+        self._confirmer = confirmer or SolanaDevnetConfirmer(HttpSolanaRpcTransport(self._rpc_url))
         self._private_key = private_key
         self._payer_address = self._derive_payer_address(private_key)
         self._calls = 0
@@ -227,20 +258,34 @@ class OfficialX402DevnetExecutor:
             if not settlement.success or not settlement.transaction or settlement.amount is None:
                 raise ValueError("facilitator did not confirm settlement")
             settled_amount = Decimal(settlement.amount) / _USDC_ATOMIC_FACTOR
+            transaction_signature = settlement.transaction
+            confirmation = self._confirmer.confirm(
+                transaction_signature=transaction_signature,
+                expected_mint=requirement.asset_mint,
+                expected_source_owner=self._payer_address,
+                expected_destination_owner=request.recipient,
+                expected_amount_atomic=requirement.amount_atomic,
+            )
             return X402LiveSettlementResult(
-                settlement_reference=f"solana:devnet:{settlement.transaction}",
-                transaction_signature=settlement.transaction,
+                settlement_reference=f"solana:devnet:{transaction_signature}",
+                transaction_signature=transaction_signature,
                 explorer_url=(
-                    f"{SOLANA_DEVNET_EXPLORER_ROOT}/{settlement.transaction}?cluster=devnet"
+                    f"{SOLANA_DEVNET_EXPLORER_ROOT}/{transaction_signature}?cluster=devnet"
                 ),
                 network=str(settlement.network),
                 payer=settlement.payer or self._payer_address,
                 recipient=request.recipient,
                 amount=settled_amount,
                 facilitator=self._facilitator_url,
+                confirmation=confirmation,
             )
         except SettlementUnavailable:
             raise
+        except DevnetConfirmationError as exc:
+            raise SettlementUnavailable(
+                SettlementFailureKind.INVALID_RESPONSE,
+                settlement_type=X402_DEVNET_LIVE_SETTLEMENT_TYPE,
+            ) from exc
         except Exception as exc:
             raise self._unavailable(exc) from None
 

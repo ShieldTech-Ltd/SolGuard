@@ -12,7 +12,9 @@ when credentials, faucet funds, or public services are unavailable.
 
 No real transaction signature is committed to this repository. A devnet transaction
 is evidence only after this command returns `VERIFIED` with a non-empty
-`transaction_signature` that resolves on Solana Explorer.
+`transaction_signature` and an `on_chain_confirmation` object derived independently
+from Solana RPC. Explorer is useful for presentation, but it is not the authoritative
+confirmation source.
 
 ## What the demonstration proves
 
@@ -22,8 +24,10 @@ The command runs two requests through the same SolGuard gateway:
    called.
 2. The exact permitted request returns `ALLOW`, consumes a single-use authorization at
    the wallet boundary, signs the x402 SVM payload, and requests facilitator settlement.
-3. The returned network, payer, recipient, amount, and transaction signature are
-   checked before the result is reported as verified.
+3. The returned signature is queried through `getSignatureStatuses` and
+   `getTransaction`. The result is reported as verified only when RPC reports a
+   successful confirmed/finalized transaction and the exact USDC source/destination
+   token-account deltas match the canonical amount.
 
 This is a direct facilitator-backed x402 devnet settlement demonstration. It is not a
 complete paid-resource server/client round trip.
@@ -66,13 +70,24 @@ uv run --extra devnet solguard-x402-live --amount 0.001 --confirm-devnet
 ```
 
 The command emits machine-readable JSON. On success, retain the output as demonstration
-evidence, verify its `explorer_url`, and display the network as Solana devnet. Do not
-store the private key or a populated environment file with the evidence.
+evidence. The confirmation contains only RPC-derived signature, slot, status, mint,
+owners, token accounts, and atomic balance deltas. It always states that devnet tokens
+have no real monetary value. Do not assign a GBP value to them, and do not store the
+private key or a populated environment file with the evidence.
+
+The current command is a direct facilitator-backed settlement exercise, not a complete
+paid-resource HTTP round trip. It also uses the official SDK's in-process keypair signer;
+the separately tested SolGuard-signed isolated wallet boundary is not yet wired into that
+SDK signer. Therefore code-level RPC readiness alone does not satisfy the full live
+evidence issue. Keep that issue open until the paid resource, isolated signer, real
+signature, RPC response, resource response, authorization receipt, exact command, and
+source commit are captured together.
 
 ## Failures and fallback
 
 The command fails closed when the mandate, request binding, authorization, SDK,
-facilitator, RPC service, or settlement evidence fails. CLI errors expose only a safe
+facilitator, independent RPC service, token-delta match, or settlement evidence fails.
+CLI errors expose only a safe
 error class, not exception details that could contain credentials or remote responses.
 
 For a reliable presentation without external dependencies, run:
@@ -86,6 +101,7 @@ That command is labeled `X402_DEVNET_SIMULATED`; it does not produce a transacti
 ## Production gaps
 
 The devnet command keeps its disposable key in process memory because the SDK needs a
-signer. Production would require managed key custody, durable authorization and replay
-state, authenticated configuration, private RPC/facilitator policy, transaction-level
-SVM validation, monitoring, and an independent mainnet security review.
+signer. Production would require the isolated authorization-verifying signer, managed key
+custody, durable authorization and replay state, authenticated configuration, private
+RPC/facilitator policy, transaction-level SVM validation, monitoring, and an independent
+mainnet security review.
