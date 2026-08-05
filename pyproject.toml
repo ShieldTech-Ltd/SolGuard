@@ -27,7 +27,7 @@ classifiers = [
   "Typing :: Typed",
 ]
 dependencies = [
-    "cryptography>=44,<48",
+    "cryptography>=50.0.0,<51",
 ]
 
 [project.scripts]
